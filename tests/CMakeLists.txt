@@ -1,0 +1,3 @@
+add_subdirectory(Calculator)
+add_subdirectory(RPCOnly)
+add_subdirectory(SignalsOnly)

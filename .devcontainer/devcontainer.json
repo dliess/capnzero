@@ -1,0 +1,28 @@
+{
+    "name": "BuildEnv",
+    "dockerFile": "Dockerfile",
+    "containerUser": "build-user",
+    "build": { "args": {
+       "UID": "1000",
+       "GID": "1000",
+             },
+       },
+    "runArgs" : ["--privileged" ],
+    "settings": { 
+       "terminal.integrated.shell.linux": "/bin/zsh"
+    },
+    "extensions": [
+       "eamodio.gitlens",
+       "ms-vscode.cpptools",
+       "twxs.cmake",
+       "ms-vscode.cmake-tools",
+       "jebbs.plantuml",
+       "plex.vscode-protolint",
+       "zxh404.vscode-proto3",
+       "xaver.clang-format",
+       "tomiturtiainen.rf-intellisense",
+       "derivitec-ltd.cmake-test-adapter",
+       "be5invis.toml",
+       "abronan.capnproto-syntax"
+    ]
+ }
