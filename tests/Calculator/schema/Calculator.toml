@@ -1,0 +1,17 @@
+# parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
+[services]
+    [services.Calculator.rpc.add]
+        parameter = { a = 'Int32', b = 'Int32' }
+        returns = { ret = 'Int32'}
+    [services.Calculator.rpc.sub]
+        parameter = { a = 'Int32', b = 'Int32' }
+        returns = { ret = 'Int32'}
+
+    [services.Screen.rpc.setBrightness]
+        parameter = { brightness = 'UInt32' }
+    [services.Screen.signal.brightnessChanged]
+        parameter = { brightness = 'UInt32' }
+    [services.Screen.rpc.setTitle]
+        parameter = { title = 'Text' }
+    [services.Screen.rpc.setId]
+        parameter = { title = 'Data<8>' }

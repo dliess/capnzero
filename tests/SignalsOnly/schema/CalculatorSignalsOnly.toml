@@ -1,0 +1,4 @@
+# parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
+[services]
+    [services.Screen.signal.brightnessChanged]
+        parameter = { brightness = 'UInt32' }
