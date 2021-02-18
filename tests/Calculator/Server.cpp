@@ -29,6 +29,16 @@ public:
             m_rSignals.Screen__brightnessChanged(brightness);
         }
     }
+	void setColor(EColor color) override
+    {
+        switch(color)
+        {
+            case EColor::RED: break;
+            case EColor::GREEN: break;
+            case EColor::BLUE: break;
+            case EColor::YELLOW: break;
+        }
+    }
 	void setTitle(const TextView& title) override
     {
 

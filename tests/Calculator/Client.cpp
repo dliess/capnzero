@@ -14,6 +14,7 @@ int main()
     {
         client.Screen__setBrightness(i);
     }
+    client.Screen__setColor(EColor::GREEN);
     std::this_thread::sleep_for (std::chrono::seconds(1));
     return 0;
 }
