@@ -16,6 +16,10 @@ def to_snake_case(name):
     return re.sub(r'(?<!^)(?=[A-Z])', '_', name)
 
 def is_integral_type(type):
+    if "enumerations" in data:
+        for enum_name in data["enumerations"]:
+            if type == enum_name:
+                return True
     return type == "Int8" or \
            type == "Int16" or \
            type == "Int32" or \
@@ -142,6 +146,16 @@ def create_capnp_file_content_str(data):
     service_enum_str += "}\n"
 
     outStr += service_enum_str
+
+    #create user defined enumerations
+    schema_enum_str = ""
+    if "enumerations" in data:
+        for enum_name in data["enumerations"]:
+            schema_enum_str += "enum {} {{\n".format(enum_name)
+            for enum_element_name, enum_element_number in data["enumerations"][enum_name].items():
+                schema_enum_str += "\t{} @{};\n".format(lowerfirst(enum_element_name), enum_element_number)
+            schema_enum_str +="}\n"
+    outStr += schema_enum_str
 
     # Create capnp enum for rpc Ids 
     # convention for enum name: <service_name> + "RpcIds
@@ -330,18 +344,19 @@ public:
 
 #include <zmq.hpp>
 #include "capnzero_typedefs.h"
+#include "{1}.capnp.h"
 
-{1}
 {2}
+{3}
 
 namespace capnzero
 {{
 
-{3}
+{4}
 
 }} // namespace capnzero
 #endif
-""".format(file_we.upper(), client_rpc_class, client_signal_class, client_class)
+""".format(file_we.upper(), file_we, client_rpc_class, client_signal_class, client_class)
     return outStr
 
 #####################################################
@@ -858,7 +873,7 @@ void {0}Server::processNextRequest(WaitMode waitMode) {{
 #####################################################
 ############ RPC INTERFACE HEADERS ##################
 #####################################################
-def create_capnzero_cbif_h_content_str(service_name, rpc_infos, file_we):
+def create_capnzero_cbif_h_content_str(service_name, rpc_infos, file_we, file_base_we):
     if_member_fns = ""
     for rpc_name in rpc_infos:
         return_type = create_return_type_str_server(rpc_infos[rpc_name], rpc_name)
@@ -872,19 +887,20 @@ def create_capnzero_cbif_h_content_str(service_name, rpc_infos, file_we):
 #define {0}_H
 
 #include "capnzero_typedefs.h"
+#include "{1}.capnp.h"
 
 namespace capnzero
 {{
 
-class {1}
+class {2}
 {{
 public:
-    virtual ~{1}() = default;
-{2}}};
+    virtual ~{2}() = default;
+{3}}};
 
 }}
 #endif
-""".format(to_snake_case(file_we).upper(), create_member_cb_if_type(service_name), if_member_fns)
+""".format(to_snake_case(file_we).upper(), file_base_we, create_member_cb_if_type(service_name), if_member_fns)
 
     return outStr
 
@@ -934,4 +950,4 @@ for service_name in data["services"]:
     if "rpc" in service:
         rpc_if_filename_we = file_we + create_member_cb_if_type(service_name)
         with open(outdir + "/" + rpc_if_filename_we + ".h", 'w') as open_file:
-            open_file.write(create_capnzero_cbif_h_content_str(service_name, service["rpc"], rpc_if_filename_we))
+            open_file.write(create_capnzero_cbif_h_content_str(service_name, service["rpc"], rpc_if_filename_we, file_we))
