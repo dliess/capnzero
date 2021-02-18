@@ -1,8 +1,13 @@
 function(capnzero_generate_cpp SOURCES HEADERS PROTOCOL_DESCRIPTION_FILE)
+  if(ARGN)
+    set(WITH_QT_CLIENT ON)
+  endif()
   set(_GEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
   set(${SOURCES})
   set(${HEADERS})
+
+  message(STATUS "WITH_QT_CLIENT: ${WITH_QT_CLIENT}")
 
   get_filename_component(FIL_WLE ${PROTOCOL_DESCRIPTION_FILE} NAME_WLE) # File name without directory and last extension
 
@@ -14,6 +19,8 @@ function(capnzero_generate_cpp SOURCES HEADERS PROTOCOL_DESCRIPTION_FILE)
             "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.cpp"
             "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.h"
             "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.cpp"
+            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.h"
+            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.cpp"
     COMMAND python3 ${GENERATOR_SCRIPT_PATH}
     ARGS  --outdir=${_GEN_OUTPUT_DIR}
           --descrfile=${PROTOCOL_DESCRIPTION_FILE}
@@ -55,6 +62,10 @@ function(capnzero_generate_cpp SOURCES HEADERS PROTOCOL_DESCRIPTION_FILE)
   list(APPEND ${HEADERS} "${GEN_CAPNP_FILE}.h")
   list(APPEND ${HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.h")
   list(APPEND ${HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.h")
+  if(WITH_QT_CLIENT)
+    list(APPEND ${HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.h")
+    list(APPEND ${SOURCES} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.cpp")
+  endif(WITH_QT_CLIENT)
 
   set(${SOURCES} ${${SOURCES}} PARENT_SCOPE)
   set(${HEADERS} ${${HEADERS}} PARENT_SCOPE)

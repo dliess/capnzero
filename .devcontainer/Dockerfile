@@ -41,6 +41,14 @@ RUN apt-get update && apt-get install -y \
     python3-toml \
     && rm -rf /var/lib/apt/lists/*
 
+# install Qt build common dependencies
+RUN apt-get update && apt-get install -y \
+    qtbase5-dev \
+    qtdeclarative5-dev \
+    libqt5websockets5-dev \
+    libqt5webchannel5-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Create group and user
 RUN groupadd --gid=$GID $BUILD_USER
 RUN useradd --create-home --shell /bin/bash $BUILD_USER --uid=$UID -g $BUILD_USER

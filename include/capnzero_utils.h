@@ -25,7 +25,7 @@ typename T::Reader getReader(MsgBuf& msgBuf)
 }
 
 inline
-void sendOverZmq(::capnp::MallocMessageBuilder& message,
+void sendOverZmq(::capnp::MessageBuilder& message,
                   zmq::socket_t& zmqSocket,
                   const zmq::send_flags& sendFlags){
     kj::Array<capnp::word> words = messageToFlatArray(message);
