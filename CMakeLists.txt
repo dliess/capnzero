@@ -49,5 +49,7 @@ target_link_libraries(${PROJECT_NAME} INTERFACE span)
 
 set(GENERATOR_SCRIPT_PATH ${CMAKE_CURRENT_LIST_DIR}/scripts/capnzeroc.py)
 
-#add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(tests)
+option(CAPNZERO_BUILD_TESTS "Capnzero build tests" ON)
+if(${CAPNZERO_BUILD_TESTS})
+  add_subdirectory(tests)
+endif()
