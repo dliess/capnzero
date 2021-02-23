@@ -444,8 +444,7 @@ using namespace capnzero;
                     params = data["services"][service_name]["rpc"][rpc_name]["parameter"]
                     for param_name, param_type in params.items():
                         if(map_descr_type_to_capnp_type(param_type) == 'Data'):
-                            outStr += "\t\tcapnp::Data::Reader reader({0}.data(), {0}.size());\n".format(param_name)
-                            outStr += "\t\tparamBuilder.set{0}(reader);\n".format(upperfirst(param_name))
+                            outStr += "\t\tparamBuilder.set{0}(capnp::Data::Reader({1}.data(), {1}.size()));\n".format(upperfirst(param_name), param_name)
                         else:
                             outStr += "\t\tparamBuilder.set{0}({1});\n".format(upperfirst(param_name), param_name)
                     outStr += "\t\tsendOverZmq(message, m_zmqReqSocket, zmq::send_flags::none);\n"
