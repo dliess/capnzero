@@ -9,7 +9,7 @@ project(capnzero
 include(cmake/CPM.cmake)
 
 CPMFindPackage(
-    NAME CapnProto
+    NAME capnproto
     GITHUB_REPOSITORY capnproto/capnproto
     VERSION 0.7.0
 )
