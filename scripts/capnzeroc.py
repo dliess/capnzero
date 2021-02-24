@@ -293,16 +293,18 @@ namespace capnzero
 class {0}ClientSignals
 {{
 public:
-    {0}ClientSignals(zmq::context_t& rZmqContext, const std::string& serverRpcAddr);
+    {0}ClientSignals(zmq::context_t& rZmqContext, std::string serverRpcAddr);
     ~{0}ClientSignals();
+    void StartThread();
+	void signalReceiverThreadFn();
 {1}
 private:
     zmq::context_t& m_rZmqContext;
+    std::string m_serverSignalAddr;
 	std::atomic<bool> m_terminateRequest{{false}};
 	zmq::socket_t m_zmqSubHelperSocket;
 	std::unique_ptr<std::thread> m_pThread;
 
-	void signalReceiverThreadFn(const std::string& serverSignalAddr);
 	void handleIncomingSignal(zmq::socket_t& zmqSubSocket);
 	void handleSubscriptionRequest(zmq::socket_t& zmqSubHelperSocket, zmq::socket_t& zmqSubSocket);
 {2}
@@ -394,12 +396,12 @@ using namespace capnzero;
 
     if has_signal_handling:
         outStr += """\
-{0}ClientSignals::{0}ClientSignals(zmq::context_t& rZmqContext, const std::string& serverSignalAddr):
+{0}ClientSignals::{0}ClientSignals(zmq::context_t& rZmqContext, std::string serverSignalAddr):
     m_rZmqContext(rZmqContext),
-    m_zmqSubHelperSocket(rZmqContext, zmq::socket_type::pair)
+    m_zmqSubHelperSocket(rZmqContext, zmq::socket_type::pair),
+    m_serverSignalAddr(std::move(serverSignalAddr))
 {{
     m_zmqSubHelperSocket.bind("inproc://{0}SubHelper");
-    m_pThread = std::make_unique<std::thread>([this, serverSignalAddr]() {{ signalReceiverThreadFn(serverSignalAddr); }});
 }}
 
 {0}ClientSignals::~{0}ClientSignals()
@@ -410,7 +412,14 @@ using namespace capnzero;
 	if(m_pThread) m_pThread->join();
 }}
 
+void {0}ClientSignals::StartThread()
+{{
+    if(m_pThread) return;
+    m_pThread = std::make_unique<std::thread>([this]() {{ signalReceiverThreadFn(); }});
+}}
+
 """.format(file_we)
+
 
     # define rpc-s
     for service_name in data["services"]:
@@ -506,10 +515,10 @@ using namespace capnzero;
 
     if has_signal_handling:
         outStr += """\
-void {0}ClientSignals::signalReceiverThreadFn(const std::string& serverSignalAddr)
+void {0}ClientSignals::signalReceiverThreadFn()
 {{
     zmq::socket_t zmqSubSocket(m_rZmqContext, zmq::socket_type::sub);
-    zmqSubSocket.connect(serverSignalAddr);
+    zmqSubSocket.connect(m_serverSignalAddr);
     zmq::socket_t zmqSubHelperSocket(m_rZmqContext, zmq::socket_type::pair);
     zmqSubHelperSocket.connect("inproc://{0}SubHelper");
 
@@ -577,6 +586,7 @@ void {0}ClientSignals::{1}({2} cb)
     {0}ClientRpc(rZmqContext, serverRpcAddr),
     {0}ClientSignals(rZmqContext, serverSignalAddr)
 {{
+    StartThread();
 }}
 """.format(file_we)
     elif has_rpc:
@@ -591,6 +601,7 @@ void {0}ClientSignals::{1}({2} cb)
 {0}Client::{0}Client(zmq::context_t& rZmqContext, const std::string& serverSignalAddr) :
     {0}ClientSignals(rZmqContext, serverSignalAddr)
 {{
+    StartThread();
 }}
 """.format(file_we)
 
