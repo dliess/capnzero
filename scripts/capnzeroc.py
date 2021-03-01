@@ -728,7 +728,8 @@ void {0}ClientSignalsThreaded::StartThread()
                             lambda_content += "\t\t\tstd::copy(src.begin(), src.end(), retVal.{}.begin());\n".format(member_name)
                         else:
                             lambda_content += "\t\t\tretVal.{0} = reader.get{1}();\n".format(member_name, upperfirst(member_name))
-                    param2 += "\t\t,[&retVal](capnp::MessageReader& message){{\n\t\t{0}\n\t}}".format(lambda_content)
+                    param1 += "\t\t," if param1 else ""
+                    param2 += "\t\t[&retVal](capnp::MessageReader& message){{\n\t\t{0}\n\t}}".format(lambda_content)
                     return_retval += "\treturn retVal;"
                 outStr += """\
 {0}
