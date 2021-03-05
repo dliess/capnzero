@@ -1,6 +1,6 @@
 [enumerations]
-EColor = { Blue = 0, Red = 1, Green = 2, Yellow = 3 }
-EMode = { Dimmed = 0, Bright = 1 }
+    EColor = { Blue = 0, Red = 1, Green = 2, Yellow = 3 }
+    EMode = { Dimmed = 0, Bright = 1 }
 
 # parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
 [services]
