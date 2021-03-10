@@ -15,6 +15,34 @@ public:
     {
         return {a - b};
     }
+
+	void multiply(::capnp::MessageReader& recvData) override
+    {
+
+    }
+
+	ReturnMultiply2 multiply2(::capnp::MessageReader& recvData) override
+    {
+        auto reader = recvData.getRoot<TwoIntParams>();
+        return { reader.getA() * reader.getB() };
+    }
+
+	void multiply3(Int32 a, Int32 b, NativeCapnpMsgWriter &writer) override
+    {
+        ::capnp::MallocMessageBuilder message;
+        auto builder = message.initRoot<OneIntParam>();
+        builder.setA(a * b);
+        writer.write(message);
+    }
+
+	void multiply4(::capnp::MessageReader& recvData, NativeCapnpMsgWriter &writer) override
+    {
+        auto reader = recvData.getRoot<TwoIntParams>();
+        ::capnp::MallocMessageBuilder message;
+        auto builder = message.initRoot<OneIntParam>();
+        builder.setA(reader.getA() * reader.getB());
+        writer.write(message);
+    }
 };
 
 class ScreenImpl : public capnzero::ScreenIf

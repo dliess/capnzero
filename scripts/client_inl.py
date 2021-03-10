@@ -1,11 +1,19 @@
 import global_types
 from common import *
+from common_client import *
 
-#####################################################
-################### CLIENT INL ######################
-#####################################################
+def create_public_section_rpc_def(data, file_we):
+    ret_str = "// public section rpc definitions\n\n"
+    for service_name in data["services"]:
+        if "rpc" in data["services"][service_name]:
+            for rpc_name in data["services"][service_name]["rpc"]:
+                rpc_info = data["services"][service_name]["rpc"][rpc_name]
+                if should_be_template(rpc_info):
+                    ret_str += create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we)
+    return ret_str
+
 def create_protected_section_rpc_def(data, file_we):
-    protected_section_rpc_def = ""
+    protected_section_rpc_def = "// protected section rpc definitions\n\n"
     for service_name in data["services"]:
         if "rpc" in data["services"][service_name]:
             for rpc_name in data["services"][service_name]["rpc"]:
@@ -91,6 +99,7 @@ namespace capnzero
 {{
 
 {}
+{}
 
 }} // namespace capnzero
-""".format(create_protected_section_rpc_def(data, file_we))
+""".format(create_public_section_rpc_def(data, file_we), create_protected_section_rpc_def(data, file_we))

@@ -7,8 +7,8 @@ def create_capnp_file_content_str(data):
 
 """
 
-    if "capnpdata" in data:
-        outStr += data["capnpdata"]
+    if "capnp-inline" in data:
+        outStr += data["capnp-inline"]
 
     # Create capnp enum for ServiceId 
     service_enum_str = "enum ServiceId {\n"
@@ -50,16 +50,17 @@ def create_capnp_file_content_str(data):
     for service_name in data["services"]:
         if "rpc" in data["services"][service_name]:
             for rpc_name in data["services"][service_name]["rpc"]:
-                if "parameter" in data["services"][service_name]["rpc"][rpc_name]:
+                rpc_info = data["services"][service_name]["rpc"][rpc_name]
+                if "parameter" in rpc_info and isinstance(rpc_info["parameter"], dict):
                     parameter_struct_str = "struct {}{{\n".format(create_capnp_rpc_parameter_type_str(service_name, rpc_name))
-                    params = data["services"][service_name]["rpc"][rpc_name]["parameter"]
+                    params = rpc_info["parameter"]
                     for idx, key in enumerate(params.keys()):
                         parameter_struct_str += "\t" + key + " @" + str(idx) + " :" + map_descr_type_to_capnp_type(params[key]) + ";\n"  
                     parameter_struct_str += "}\n"
                     outStr += parameter_struct_str
-                if "returns" in data["services"][service_name]["rpc"][rpc_name]:
+                if "returns" in rpc_info and isinstance(rpc_info["returns"], dict):
                     return_struct_str = "struct " + create_capnp_rpc_return_type_str(service_name, rpc_name) + " {\n"
-                    members = data["services"][service_name]["rpc"][rpc_name]["returns"]
+                    members = rpc_info["returns"]
                     for idx, key in enumerate(members.keys()):
                         return_struct_str += "\t" + key + " @" + str(idx) + " :" + map_descr_type_to_capnp_type(members[key]) + ";\n"  
                     return_struct_str += "}\n"
@@ -67,9 +68,10 @@ def create_capnp_file_content_str(data):
 
         if "signal" in data["services"][service_name]:
             for signal_name in data["services"][service_name]["signal"]:
-                if "parameter" in data["services"][service_name]["signal"][signal_name]:
+                signal_info = data["services"][service_name]["signal"][signal_name]
+                if "parameter" in signal_info and isinstance(signal_info["parameter"], dict):
+                    params = signal_info["parameter"]
                     parameter_struct_str = "struct {}{{\n".format(create_capnp_signal_param_type_str(service_name, signal_name))
-                    params = data["services"][service_name]["signal"][signal_name]["parameter"]
                     for idx, key in enumerate(params.keys()):
                         parameter_struct_str += "\t" + key + " @" + str(idx) + " :" + map_descr_type_to_capnp_type(params[key]) + ";\n"  
                     parameter_struct_str += "}\n"

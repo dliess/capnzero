@@ -1,5 +1,6 @@
 import global_types
 from common import *
+from common_client import *
 
 def create_protected_section_rpc_decl(data):
     ret = ""
@@ -41,25 +42,30 @@ def create_capnzero_client_file_h_content_str(data, file_we):
                 for rpc_name in data["services"][service_name]["rpc"]:
                     rpc_info = data["services"][service_name]["rpc"][rpc_name]
                     return_type_str = "void"
+                    param1 = ""
+                    param2 = ""
                     if "returns" in rpc_info:
-                        return_type_str = create_return_type_str_client(service_name, rpc_name)
-                        return_struct_str = "\tstruct " + return_type_str + " {\n"
                         members = rpc_info["returns"]
-                        for member_name, member_type in members.items():
-                            return_struct_str += "\t\t" + map_2_ret_type(member_type) + " " + member_name + ";\n"  
-                        return_struct_str += "\t};\n"
-                        public_section_rpc += return_struct_str
+                        if isinstance(members, dict):
+                            return_type_str = create_return_type_str_client(rpc_info, service_name, rpc_name)
+                            return_struct_str = "\tstruct " + return_type_str + " {\n"
+                            for member_name, member_type in members.items():
+                                return_struct_str += "\t\t" + map_2_ret_type(member_type) + " " + member_name + ";\n"  
+                            return_struct_str += "\t};\n"
+                            public_section_rpc += return_struct_str
+                        elif members == '__capnp__native__':
+                            param2 = "Callable&& retCb"
 
-                    parameter_str = ""
-                    if "parameter" in rpc_info:
-                        parameter_str = create_fn_parameter_str(rpc_info)
+                    parameter_str = create_fn_parameter_str_from_dict(rpc_info)
+                    if param2 != "":
+                        public_section_rpc += "\ttemplate<typename Callable>\n"
+                        parameter_str += ", "
+                    parameter_str += param2
                     method_name = service_name + "__" + rpc_name
                     public_section_rpc +=  "\t" + return_type_str
                     public_section_rpc += " " if len(return_type_str) < 8 else "\n\t"
                     public_section_rpc += method_name + "(" + parameter_str + ");\n"
                     public_section_rpc += "\n"
-
-
 
         client_rpc_class = """\
 namespace capnzero
@@ -89,7 +95,7 @@ private:
                     for signal_name in data["services"][service_name]["signal"]:
                         signal_info = data["services"][service_name]["signal"][signal_name]
                         cb_type_name = create_signal_cb_type(service_name, signal_name)
-                        public_section_signal += "\tusing {} = std::function<void({})>;\n".format(cb_type_name, create_fn_arguments_str(signal_info))
+                        public_section_signal += "\tusing {} = std::function<void({})>;\n".format(cb_type_name, create_rpc_handler_fn_arguments_str(signal_info))
                         cb_register_fn_name = "on{}{}".format(upperfirst(service_name), upperfirst(signal_name))
                         public_section_signal += "\tvoid {}({} cb);\n".format(cb_register_fn_name, cb_type_name)
 
@@ -102,6 +108,7 @@ private:
 
         client_signal_class = """\
 #include <functional>
+#include <capnp/message.h>
 
 namespace capnzero
 {{
