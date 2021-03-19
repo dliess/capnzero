@@ -68,8 +68,9 @@ function(capnzero_generate_cpp)
     find_program(CAPNPC_CXX_EXECUTABLE "capnpc-c++")
   endif()
 
+  set(CAPNP_GENERATE_BASE_PATH "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WLE}.capnp")
   add_custom_command(
-    OUTPUT "${GEN_CAPNP_FILE}.c++" "${GEN_CAPNP_FILE}.h"
+    OUTPUT "${CAPNP_GENERATE_BASE_PATH}.c++" "${CAPNP_GENERATE_BASE_PATH}.h"
     COMMAND ${CAPNP_EXECUTABLE}
     ARGS compile
         -o ${CAPNPC_CXX_EXECUTABLE}
@@ -79,6 +80,16 @@ function(capnzero_generate_cpp)
     COMMENT "Compiling Cap'n Proto schema ${GEN_CAPNP_FILE}"
     VERBATIM
   )
+
+  if(NOT ${_GEN_OUTPUT_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+    add_custom_command(
+      OUTPUT "${GEN_CAPNP_FILE}.c++" "${GEN_CAPNP_FILE}.h"
+      COMMAND ${CMAKE_COMMAND} -E copy "${CAPNP_GENERATE_BASE_PATH}.c++" "${CAPNP_GENERATE_BASE_PATH}.h" "${_GEN_OUTPUT_DIR}/."
+      DEPENDS "${CAPNP_GENERATE_BASE_PATH}.c++" "${CAPNP_GENERATE_BASE_PATH}.h"
+      COMMENT "Copying capnp generated sources to destination folder"
+      VERBATIM
+    )
+  endif()
 
   if(ARG_GEN_CPP_SOURCES)
       list(APPEND ${ARG_GEN_CPP_SOURCES} "${GEN_CAPNP_FILE}.c++")
