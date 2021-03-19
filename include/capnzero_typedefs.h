@@ -6,15 +6,15 @@
 #include <array>
 #include <vector>
 #include <cstdint>
-#include "tcb/span.hpp"
+#include "span.h"
 
 namespace capnzero{
 
 using Text = std::string;
 using TextView = std::string_view;
-using Span = tcb::span<const uint8_t, tcb::dynamic_extent>;
+using Span = utils::span<const uint8_t, utils::dynamic_extent>;
 template<std::size_t SIZE>
-using SpanCL = tcb::span<const uint8_t, SIZE>;
+using SpanCL = utils::span<const uint8_t, SIZE>;
 template<std::size_t SIZE>
 using Data = std::array<uint8_t, SIZE>;
 
