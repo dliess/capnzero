@@ -1,18 +1,42 @@
-function(capnzero_generate_cpp SOURCES HEADERS PROTOCOL_DESCRIPTION_FILE)
-  if(ARGN)
-    set(WITH_QT_CLIENT ON)
+function(capnzero_generate_cpp)
+
+  set(noValues)
+  set(singleValues
+    GEN_CPP_SOURCES
+    GEN_CPP_HEADERS
+    GEN_QT_CPP_SOURCES
+    GEN_QT_CPP_HEADERS
+    GEN_OUT_DIR IDL_FILE
+  )
+  set(multiValues)
+  cmake_parse_arguments(
+    ARG
+    "${noValues}" "${singleValues}" "${multiValues}"
+    ${ARGV}
+  )
+
+  if(ARG_GEN_CPP_SOURCES)
+    set(${ARG_GEN_CPP_SOURCES})
   endif()
-  set(_GEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+  if(ARG_GEN_CPP_HEADERS)
+    set(${ARG_GEN_CPP_HEADERS})
+  endif()
+  if(ARG_GEN_QT_CPP_SOURCES)
+    set(${ARG_GEN_QT_CPP_SOURCES})
+  endif()
+  if(ARG_GEN_QT_CPP_HEADERS)
+    set(${ARG_GEN_QT_CPP_HEADERS})
+  endif()
 
-  set(${SOURCES})
-  set(${HEADERS})
+  if(ARG_GEN_OUT_DIR)
+    set(_GEN_OUTPUT_DIR ${ARG_GEN_OUT_DIR})
+  else()
+    set(_GEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+  endif()
 
-  message(STATUS "WITH_QT_CLIENT: ${WITH_QT_CLIENT}")
-
-  get_filename_component(FIL_WLE ${PROTOCOL_DESCRIPTION_FILE} NAME_WLE) # File name without directory and last extension
+  get_filename_component(FIL_WLE ${ARG_IDL_FILE} NAME_WLE) # File name without directory and last extension
 
   set(GEN_CAPNP_FILE "${_GEN_OUTPUT_DIR}/${FIL_WLE}.capnp")
-
   add_custom_command(
     OUTPUT  "${GEN_CAPNP_FILE}"
             "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.h"
@@ -23,10 +47,10 @@ function(capnzero_generate_cpp SOURCES HEADERS PROTOCOL_DESCRIPTION_FILE)
             "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.cpp"
     COMMAND python3 ${GENERATOR_SCRIPT_PATH}
     ARGS  --outdir=${_GEN_OUTPUT_DIR}
-          --descrfile=${PROTOCOL_DESCRIPTION_FILE}
+          --descrfile=${ARG_IDL_FILE}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS ${GENERATOR_SCRIPT_PATH}  ${PROTOCOL_DESCRIPTION_FILE}
-    COMMENT "Running capnzeroc generator script on ${PROTOCOL_DESCRIPTION_FILE}"
+    DEPENDS ${GENERATOR_SCRIPT_PATH}  ${ARG_IDL_FILE}
+    COMMENT "Running capnzeroc generator script on ${${ARG_IDL_FILE}}"
     VERBATIM
   )
 
@@ -56,17 +80,25 @@ function(capnzero_generate_cpp SOURCES HEADERS PROTOCOL_DESCRIPTION_FILE)
     VERBATIM
   )
 
-  list(APPEND ${SOURCES} "${GEN_CAPNP_FILE}.c++")
-  list(APPEND ${SOURCES} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.cpp")
-  list(APPEND ${SOURCES} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.cpp")
-  list(APPEND ${HEADERS} "${GEN_CAPNP_FILE}.h")
-  list(APPEND ${HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.h")
-  list(APPEND ${HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.h")
-  if(WITH_QT_CLIENT)
-    list(APPEND ${HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.h")
-    list(APPEND ${SOURCES} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.cpp")
-  endif(WITH_QT_CLIENT)
+  if(ARG_GEN_CPP_SOURCES)
+      list(APPEND ${ARG_GEN_CPP_SOURCES} "${GEN_CAPNP_FILE}.c++")
+      list(APPEND ${ARG_GEN_CPP_SOURCES} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.cpp")
+      list(APPEND ${ARG_GEN_CPP_SOURCES} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.cpp")
+      set(${ARG_GEN_CPP_SOURCES} ${${ARG_GEN_CPP_SOURCES}} PARENT_SCOPE)
+  endif()
+  if(ARG_GEN_CPP_HEADERS)
+    list(APPEND ${ARG_GEN_CPP_HEADERS} "${GEN_CAPNP_FILE}.h")
+    list(APPEND ${ARG_GEN_CPP_HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.h")
+    list(APPEND ${ARG_GEN_CPP_HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.h")
+    set(${ARG_GEN_CPP_HEADERS} ${${ARG_GEN_CPP_HEADERS}} PARENT_SCOPE)
+  endif()
+  if(ARG_GEN_QT_CPP_SOURCES)
+    list(APPEND ${ARG_GEN_QT_CPP_SOURCES} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.cpp")
+    set(${ARG_GEN_QT_CPP_SOURCES} ${${ARG_GEN_QT_CPP_SOURCES}} PARENT_SCOPE)
+  endif() 
+  if(ARG_GEN_QT_CPP_HEADERS)
+    list(APPEND ${ARG_GEN_QT_CPP_HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.h")
+    set(${ARG_GEN_QT_CPP_HEADERS} ${${ARG_GEN_QT_CPP_HEADERS}} PARENT_SCOPE)
+  endif()
 
-  set(${SOURCES} ${${SOURCES}} PARENT_SCOPE)
-  set(${HEADERS} ${${HEADERS}} PARENT_SCOPE)
 endfunction()
