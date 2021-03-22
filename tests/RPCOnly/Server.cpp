@@ -3,7 +3,7 @@
 #include <chrono>
 
 namespace capnzero::CalculatorRpcOnly{
-class CalculatorImpl : public CalculatorIf
+class CalculatorImpl : public CalculatorRpcIf
 {
 public:
     ReturnAdd add(Int32 a, Int32 b) override
@@ -17,7 +17,7 @@ public:
     }
 };
 
-class ScreenImpl : public ScreenIf
+class ScreenImpl : public ScreenRpcIf
 {
 public:
 	void setBrightness(UInt32 brightness) override

@@ -192,10 +192,10 @@ def map_2_ca_call_param_type(type):
         return type
 
 def create_member_cb_if(service_name):
-    return "m_p{}If".format(upperfirst(service_name))
+    return "m_p{}RpcIf".format(upperfirst(service_name))
 
 def create_member_cb_if_type(service_name):
-    return "{}If".format(upperfirst(service_name))
+    return "{}RpcIf".format(upperfirst(service_name))
 
 def create_return_struct_definition(return_type, content, tabs):
     struct_content = ""

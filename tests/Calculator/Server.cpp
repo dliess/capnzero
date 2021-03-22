@@ -3,7 +3,7 @@
 #include <chrono>
 
 namespace capnzero::Calculator{
-class CalculatorImpl : public CalculatorIf
+class CalculatorImpl : public CalculatorRpcIf
 {
 public:
     ReturnAdd add(Int32 a, Int32 b) override
@@ -45,7 +45,7 @@ public:
     }
 };
 
-class ScreenImpl : public ScreenIf
+class ScreenImpl : public ScreenRpcIf
 {
 public:
     ScreenImpl(CalculatorServer::Signals& rSignals) : m_rSignals(rSignals) {}
