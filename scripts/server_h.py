@@ -78,7 +78,7 @@ def create_capnzero_server_file_h_content_str(data, file_we):
 
 {1}
 
-namespace capnzero
+namespace capnzero::{2}
 {{
 
 class {2}Server
@@ -92,7 +92,7 @@ private:
 {7}
 }};
 
-}} // namespace capnzero
+}} // namespace capnzero::{2}
 #endif
 """.format(file_we.upper(), cbif_includes, file_we, constructor_decl, public_rpc_part, public_signals_part, private_rpc_part, private_signals_part)
 

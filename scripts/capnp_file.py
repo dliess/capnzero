@@ -1,11 +1,14 @@
 import global_types
 from common import *
 
-def create_capnp_file_content_str(data):
+def create_capnp_file_content_str(data, file_we):
     outStr = """\
 @0x9c9f9131bf231692;
 
-"""
+using Cxx = import "/capnp/c++.capnp";
+$Cxx.namespace("capnzero::{}");
+
+""".format(file_we)
 
     if "capnp-inline" in data:
         outStr += data["capnp-inline"]
@@ -32,7 +35,8 @@ def create_capnp_file_content_str(data):
     rpc_enum_strings = []
     for service_name in data["services"]:
         if "rpc" in data["services"][service_name]:
-            rpc_enum_string = "enum " + service_name + "RpcIds {\n"
+
+            rpc_enum_string = "enum " + create_rpc_id_enum(service_name) + "{\n"
             for idx, rpc_name in enumerate(data["services"][service_name]["rpc"]):
                 rpc_enum_string += "\t" + rpc_name + " @" + str(idx) + ";\n"
             rpc_enum_string += "}\n"

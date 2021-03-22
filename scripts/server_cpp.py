@@ -178,6 +178,7 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
 #include "capnzero_utils.h"
 
 using namespace capnzero;
+using namespace capnzero::{0};
 
 """.format(file_we)
 

@@ -51,7 +51,7 @@ if "enumerations" in data:
     global_types.enumerations = data["enumerations"]
 
 with open(capnp_file, 'w') as open_file:
-    open_file.write(create_capnp_file_content_str(data))
+    open_file.write(create_capnp_file_content_str(data, file_we))
 
 with open(client_h_file, 'w') as open_file:
     open_file.write(create_capnzero_client_file_h_content_str(data, file_we))

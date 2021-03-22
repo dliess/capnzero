@@ -66,6 +66,12 @@ def rpc_return_type(rpc_info):
     else:
         return RPCType.Void
 
+def create_rpc_id_enum(service_name):
+    if service_name == "_":
+        return "RpcIds"
+    else:
+        return service_name + "RpcIds"
+
 def create_fn_parameter_str_from_dict(fn_info, converter_fn = None):
     param_type = rpc_param_type(fn_info)
     if param_type == RPCType.Void:

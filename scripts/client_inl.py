@@ -95,11 +95,11 @@ def create_capnzero_client_file_inl_content_str(data, file_we):
 #include <capnp/message.h>
 #include <capnp/serialize.h>
 #include "capnzero_utils.h"
-namespace capnzero
+namespace capnzero::{0}
 {{
 
-{}
-{}
+{1}
+{2}
 
-}} // namespace capnzero
-""".format(create_public_section_rpc_def(data, file_we), create_protected_section_rpc_def(data, file_we))
+}} // namespace capnzero::{0}
+""".format(file_we, create_public_section_rpc_def(data, file_we), create_protected_section_rpc_def(data, file_we))

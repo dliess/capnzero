@@ -2,10 +2,12 @@
 #include <iostream>
 #include <chrono>
 
+using namespace capnzero::Calculator;
+
 int main()
 {
     zmq::context_t context;
-    capnzero::CalculatorClient client(context, "tcp://localhost:5555", "tcp://localhost:5556");
+    CalculatorClient client(context, "tcp://localhost:5555", "tcp://localhost:5556");
     std::cout << client.Calculator__add(47, 333).ret << "\n";
     ::capnp::MallocMessageBuilder msg;
     auto builder = msg.initRoot<TwoIntParams>();

@@ -2,8 +2,8 @@
 #include <iostream>
 #include <chrono>
 
-namespace capnzero{
-class CalculatorImpl : public capnzero::CalculatorIf
+namespace capnzero::Calculator{
+class CalculatorImpl : public CalculatorIf
 {
 public:
     ReturnAdd add(Int32 a, Int32 b) override
@@ -45,10 +45,10 @@ public:
     }
 };
 
-class ScreenImpl : public capnzero::ScreenIf
+class ScreenImpl : public ScreenIf
 {
 public:
-    ScreenImpl(capnzero::CalculatorServer::Signals& rSignals) : m_rSignals(rSignals) {}
+    ScreenImpl(CalculatorServer::Signals& rSignals) : m_rSignals(rSignals) {}
 	void setBrightness(UInt32 brightness) override
     {
         if(m_brightness != brightness)
@@ -76,19 +76,21 @@ public:
 
     }
 private:
-    capnzero::CalculatorServer::Signals& m_rSignals;
+    CalculatorServer::Signals& m_rSignals;
     UInt32 m_brightness{0};
 };
 }
 
+using namespace capnzero::Calculator;
+
 int main()
 {
     zmq::context_t context;
-    capnzero::CalculatorServer server(context,
-                                      "tcp://*:5555",
-                                      "tcp://*:5556",
-                                      std::make_unique<capnzero::CalculatorImpl>(),
-                                      std::make_unique<capnzero::ScreenImpl>(server.signals()));
+    CalculatorServer server(context,
+                            "tcp://*:5555",
+                            "tcp://*:5556",
+                            std::make_unique<CalculatorImpl>(),
+                            std::make_unique<ScreenImpl>(server.signals()));
 
     while(true)
     {

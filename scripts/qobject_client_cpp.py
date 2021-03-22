@@ -72,6 +72,7 @@ def create_capnzero_qobject_client_file_cpp_content_str(data, file_we):
 #include "{0}_QObjectClient.h"
 
 using namespace capnzero;
+using namespace capnzero::{0}
 
 {1}
 {2}

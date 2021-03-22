@@ -40,7 +40,7 @@ def create_capnzero_qobject_client_file_h_content_str(data, file_we):
 #include <QObject>
 #include "{1}_Client.h"
 
-namespace capnzero
+namespace capnzero::{1}
 {{
 
 class {1}QObjectClient : public QObject, public {1}Client
@@ -55,7 +55,7 @@ private:
     using Super = {1}Client;
 }};
 
-}} // namespace capnzero
+}} // namespace capnzero::{1}
 #endif
 """.format(to_snake_case(file_we).upper(), file_we, qclient_constructor_declaration, qinvokable_declarations, signal_declarations)
     return outStr

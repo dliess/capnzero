@@ -68,7 +68,7 @@ def create_capnzero_client_file_h_content_str(data, file_we):
                     public_section_rpc += "\n"
 
         client_rpc_class = """\
-namespace capnzero
+namespace capnzero::{0}
 {{
 
 class {0}ClientRpc
@@ -82,7 +82,7 @@ private:
     zmq::socket_t m_zmqReqSocket;
 }};
 
-}} // namespace capnzero
+}} // namespace capnzero::{0}
 """.format(file_we, public_section_rpc, protected_section_rpc_decl)
 
     client_signal_threaded_class = ""
@@ -110,7 +110,7 @@ private:
 #include <functional>
 #include <capnp/message.h>
 
-namespace capnzero
+namespace capnzero::{0}
 {{
 
 class {0}ClientSignals
@@ -124,7 +124,7 @@ private:
 {2}
 }};
 
-}} // namespace capnzero
+}} // namespace capnzero::{0}
 """.format(file_we, public_section_signal, signal_handling_cb_members)
 
 
@@ -133,7 +133,7 @@ private:
 #include <functional>
 #include <atomic>
 
-namespace capnzero
+namespace capnzero::{0}
 {{
 
 class {0}ClientSignalsThreaded
@@ -156,7 +156,7 @@ private:
 {2}
 }};
 
-}} // namespace capnzero
+}} // namespace capnzero::{0}
 """.format(file_we, public_section_signal, signal_handling_cb_members)
 
 
@@ -198,13 +198,13 @@ public:
 {3}
 {4}
 
-namespace capnzero
+namespace capnzero::{1}
 {{
 
 {5}
 
 
-}} // namespace capnzero
+}} // namespace capnzero::{1}
 #include "{1}_Client.inl"
 #endif
 """.format(file_we.upper(), file_we, client_rpc_class, client_signal_class, client_signal_threaded_class, client_class)
