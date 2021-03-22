@@ -17,9 +17,9 @@ def create_capnzero_qobject_client_file_cpp_content_str(data, file_we):
                 signal_info = data["services"][service_name]["signal"][signal_name]
                 signal_registrations += """\
     Super::on{0}{1}([this]({2}){{
-        emit {0}__{3}({4});
+        emit {3}({4});
     }});
-""".format(upperfirst(service_name), upperfirst(signal_name), create_fn_arguments_str(signal_info), signal_name, create_fn_arguments_param_only_str(signal_info))
+""".format(upperfirst(service_name), upperfirst(signal_name), create_fn_arguments_str(signal_info), create_signal_method_name(service_name, signal_name), create_fn_arguments_param_only_str(signal_info))
 
     qclient_constructor_definition = ""
     if has_rpc and has_signal_handling:
@@ -60,7 +60,7 @@ def create_capnzero_qobject_client_file_cpp_content_str(data, file_we):
                 parameter_str = ""
                 if "parameter" in rpc_info:
                     parameter_str = create_fn_parameter_str_from_dict(rpc_info)
-                method_name = service_name + "__" + rpc_name
+                method_name = create_rpc_method_name(service_name, rpc_name)
                 qinvokable_definitions += return_type_str
                 qinvokable_definitions += " " if len(return_type_str) < 40 else ("\n")
                 qinvokable_definitions += "{0}QObjectClient::{1}({2}) {{\n".format(file_we, method_name, parameter_str)
@@ -72,6 +72,7 @@ def create_capnzero_qobject_client_file_cpp_content_str(data, file_we):
 #include "{0}_QObjectClient.h"
 
 using namespace capnzero;
+using namespace capnzero::{0}
 
 {1}
 {2}

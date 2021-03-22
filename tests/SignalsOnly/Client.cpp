@@ -13,7 +13,7 @@ int main()
     });
     std::this_thread::sleep_for (std::chrono::seconds(4));
 #else
-    capnzero::CalculatorSignalsOnlyClientSignals client(context, "tcp://localhost:5556");
+    capnzero::CalculatorSignalsOnly::CalculatorSignalsOnlyClientSignals client(context, "tcp://localhost:5556");
     std::cout << "CLIENT HERE 1\n";
     client.onScreenBrightnessChanged([](capnzero::UInt32 brightness){
         std::cout << "brightness changed received: " << brightness << "\n";

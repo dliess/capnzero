@@ -9,7 +9,7 @@ def create_rpc_declarations_for_qt_webchannel_obj(data, tabs, prefix):
                 rpc_info = data["services"][service_name]["rpc"][rpc_name]
                 return_type_str = create_rpc_return_type_for_qt_webchannel_obj(rpc_info)
                 parameter_str = create_fn_parameter_str_from_dict(rpc_info, map_type_to_qt_type)
-                method_name = service_name + "__" + rpc_name
+                method_name = create_rpc_method_name(service_name, rpc_name)
                 ret_str +=  tabs + prefix + " " + return_type_str
                 ret_str += " " if len(prefix + " " + return_type_str) < 40 else ("\n" + tabs)
                 ret_str += method_name + "(" + parameter_str + ");\n"
@@ -40,7 +40,7 @@ def create_capnzero_qobject_client_file_h_content_str(data, file_we):
 #include <QObject>
 #include "{1}_Client.h"
 
-namespace capnzero
+namespace capnzero::{1}
 {{
 
 class {1}QObjectClient : public QObject, public {1}Client
@@ -55,7 +55,7 @@ private:
     using Super = {1}Client;
 }};
 
-}} // namespace capnzero
+}} // namespace capnzero::{1}
 #endif
 """.format(to_snake_case(file_we).upper(), file_we, qclient_constructor_declaration, qinvokable_declarations, signal_declarations)
     return outStr

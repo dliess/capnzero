@@ -66,6 +66,34 @@ def rpc_return_type(rpc_info):
     else:
         return RPCType.Void
 
+def create_rpc_method_name(service_name, rpc_name):
+    if service_name == "_":
+        return rpc_name
+    else:
+        return service_name + "__" + rpc_name
+
+def create_signal_method_name(service_name, signal_name):
+    if service_name == "_":
+        return signal_name
+    else:
+        return service_name + "__" + signal_name
+
+
+def create_rpc_service_id_capnp_enum(service_name):
+    if service_name == "_":
+        return "main"
+    else:
+        return lowerfirst(service_name)
+
+def create_rpc_service_id_enum(service_name):
+    return to_snake_case(create_rpc_service_id_capnp_enum(service_name)).upper()
+
+def create_rpc_id_enum(service_name):
+    if service_name == "_":
+        return "RpcIds"
+    else:
+        return service_name + "RpcIds"
+
 def create_fn_parameter_str_from_dict(fn_info, converter_fn = None):
     param_type = rpc_param_type(fn_info)
     if param_type == RPCType.Void:
@@ -147,13 +175,22 @@ def create_return_type_str_server(rpc_info, rpc_name):
         return rpc_info["returns"]
 
 def create_capnp_rpc_parameter_type_str(service_name, rpc_name):
-    return "CAPNPParameter" + service_name +  upperfirst(rpc_name)
+    if service_name == "_":
+        return "CAPNPParameter" + upperfirst(rpc_name)
+    else:
+        return "CAPNPParameter" + service_name +  upperfirst(rpc_name)
 
 def create_capnp_rpc_return_type_str(service_name, rpc_name):
-    return "CAPNPReturn" + service_name +  upperfirst(rpc_name)
+    if service_name == "_":
+        return "CAPNPReturn" + upperfirst(rpc_name)
+    else: 
+        return "CAPNPReturn" + service_name +  upperfirst(rpc_name)
 
 def create_capnp_signal_param_type_str(service_name, signal_name):
-    return "CAPNPSignalParameter" + service_name +  upperfirst(signal_name)
+    if service_name == "_":
+        return "CAPNPSignalParameter" + upperfirst(signal_name)
+    else:
+        return "CAPNPSignalParameter" + service_name +  upperfirst(signal_name)
 
 def map_descr_type_to_capnp_type(type):
     import re
@@ -186,10 +223,13 @@ def map_2_ca_call_param_type(type):
         return type
 
 def create_member_cb_if(service_name):
-    return "m_p{}If".format(upperfirst(service_name))
+    return "m_p{}RpcIf".format(upperfirst(service_name))
 
 def create_member_cb_if_type(service_name):
-    return "{}If".format(upperfirst(service_name))
+    if service_name == "_":
+        return "RpcIf"
+    else:
+        return "{}RpcIf".format(upperfirst(service_name))
 
 def create_return_struct_definition(return_type, content, tabs):
     struct_content = ""
@@ -202,7 +242,10 @@ def create_return_struct_definition(return_type, content, tabs):
 """.format(tabs, return_type, struct_content)
 
 def create_signal_cb_type(service_name, signal_name):
-    return "{}{}Cb".format(upperfirst(service_name), upperfirst(signal_name))
+    if service_name == "_":
+        return "{}Cb".format(upperfirst(signal_name))
+    else:
+        return "{}{}Cb".format(upperfirst(service_name), upperfirst(signal_name))
 
 def create_signal_cb_member(service_name, signal_name):
     return "m_{}".format(lowerfirst(create_signal_cb_type(service_name, signal_name)))
@@ -259,5 +302,5 @@ def create_signal_fn_declarations(data, tabs, converter_fn = None):
         if "signal" in data["services"][service_name]:
             for signal_name in data["services"][service_name]["signal"]:
                 signal_info = data["services"][service_name]["signal"][signal_name]
-                signal_fn_declarations += tabs + "void {}__{}({});\n".format(service_name, signal_name, create_fn_input_parameter_str_sender(signal_info, converter_fn))
+                signal_fn_declarations += tabs + "void {}({});\n".format(create_signal_method_name(service_name, signal_name), create_fn_input_parameter_str_sender(signal_info, converter_fn))
     return signal_fn_declarations

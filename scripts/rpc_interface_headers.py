@@ -26,7 +26,7 @@ def create_capnzero_cbif_h_content_str(service_name, rpc_infos, file_we, file_ba
 #include "{1}.capnp.h"
 #include "capnp/message.h"
 
-namespace capnzero
+namespace capnzero::{1}
 {{
 
 class {2}

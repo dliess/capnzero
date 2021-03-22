@@ -2,7 +2,7 @@
 #include <iostream>
 #include <chrono>
 
-namespace capnzero{
+namespace capnzero::Calculator{
 class CalculatorImpl : public capnzero::CalculatorIf
 {
 public:
