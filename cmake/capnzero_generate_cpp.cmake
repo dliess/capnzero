@@ -35,6 +35,24 @@ function(capnzero_generate_cpp)
   endif()
 
   get_filename_component(FIL_WLE ${ARG_IDL_FILE} NAME_WLE) # File name without directory and last extension
+  get_filename_component(GENERATOR_SCRIPT_DIR ${GENERATOR_SCRIPT_PATH} DIRECTORY)
+
+  set(ALL_GENERATOS_SCRIPTS
+    "${GENERATOR_SCRIPT_PATH}"
+    "${GENERATOR_SCRIPT_DIR}/capnp_file.py"
+    "${GENERATOR_SCRIPT_DIR}/capnzeroc.py"
+    "${GENERATOR_SCRIPT_DIR}/client_cpp.py"
+    "${GENERATOR_SCRIPT_DIR}/client_h.py"
+    "${GENERATOR_SCRIPT_DIR}/client_inl.py"
+    "${GENERATOR_SCRIPT_DIR}/common_client.py"
+    "${GENERATOR_SCRIPT_DIR}/common.py"
+    "${GENERATOR_SCRIPT_DIR}/global_types.py"
+    "${GENERATOR_SCRIPT_DIR}/qobject_client_cpp.py"
+    "${GENERATOR_SCRIPT_DIR}/qobject_client_h.py"
+    "${GENERATOR_SCRIPT_DIR}/rpc_interface_headers.py"
+    "${GENERATOR_SCRIPT_DIR}/server_cpp.py"
+    "${GENERATOR_SCRIPT_DIR}/server_h.py"
+  )
 
   set(GEN_CAPNP_FILE "${_GEN_OUTPUT_DIR}/${FIL_WLE}.capnp")
   add_custom_command(
@@ -49,7 +67,7 @@ function(capnzero_generate_cpp)
     ARGS  --outdir=${_GEN_OUTPUT_DIR}
           --descrfile=${ARG_IDL_FILE}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS ${GENERATOR_SCRIPT_PATH}  ${ARG_IDL_FILE}
+    DEPENDS ${GENERATOR_SCRIPT_PATH}  ${ARG_IDL_FILE} ${ALL_GENERATOS_SCRIPTS}
     COMMENT "Running capnzeroc generator script on ${${ARG_IDL_FILE}}"
     VERBATIM
   )

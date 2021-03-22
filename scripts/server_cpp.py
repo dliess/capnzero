@@ -33,28 +33,61 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
                 rpc_info = data["services"][service_name]["rpc"][rpc_name]
                 cases_str += "\t\t\t\tcase to_underlying({0}RpcIds::{1}):\n".format(service_name, to_snake_case(rpc_name).upper())
                 cases_str += "\t\t\t\t{\n"
+
                 params = ""
-                if "parameter" in rpc_info:
+                param_category = rpc_param_type(rpc_info)
+                if param_category == RPCType.Void:
+                    pass
+                elif param_category == RPCType.Dict:
+                    pass
+                elif param_category == RPCType.CapnpNative:
+                    pass
+
+                returns_category =  rpc_return_type(rpc_info)
+                if returns_category == RPCType.Void:
+                    pass
+                elif returns_category == RPCType.Dict:
+                    pass
+                elif returns_category == RPCType.CapnpNative:
+                    pass
+                elif returns_category == RPCType.DirectType:
+                    pass
+
+                if param_category != RPCType.Void:                   
                     cases_str += "\t\t\t\t\tzmq::message_t paramBuf;\n"
                     cases_str += "\t\t\t\t\tauto res2 = m_zmqRepSocket.recv(paramBuf, zmq::recv_flags::none);\n"
                     cases_str += "\t\t\t\t\tif (!res2) { throw std::runtime_error(\"No received msg\"); }\n"
-                    cases_str += "\t\t\t\t\tauto paramReader = getReader<{}>(paramBuf);\n".format(create_capnp_rpc_parameter_type_str(service_name, rpc_name))
-                    param_info = rpc_info["parameter"]
-                    for param_name, param_type in param_info.items():
-                        cpp_rpc_if_type = map_2_ca_call_param_type(param_type)
-                        if cpp_rpc_if_type.startswith("Span"):
-                            params += "{0}(paramReader.get{1}().begin(), paramReader.get{1}().end())".format(cpp_rpc_if_type, upperfirst(param_name))
-                        elif cpp_rpc_if_type == "TextView":
-                            params += "TextView(paramReader.get{0}().begin(), paramReader.get{0}().size())".format(upperfirst(param_name))
-                        else:
-                            params += "paramReader.get{}()".format(upperfirst(param_name))
-                        if list(param_info.keys())[-1] != param_name:
-                            params += ", "
+                    if param_category == RPCType.Dict:
+                        param_info = rpc_info["parameter"]
+                        cases_str += "\t\t\t\t\tauto paramReader = getReader<{}>(paramBuf);\n".format(create_capnp_rpc_parameter_type_str(service_name, rpc_name))
+                        for param_name, param_type in param_info.items():
+                            cpp_rpc_if_type = map_2_ca_call_param_type(param_type)
+                            if cpp_rpc_if_type.startswith("Span"):
+                                params += "{0}(paramReader.get{1}().begin(), paramReader.get{1}().end())".format(cpp_rpc_if_type, upperfirst(param_name))
+                            elif cpp_rpc_if_type == "TextView":
+                                params += "TextView(paramReader.get{0}().begin(), paramReader.get{0}().size())".format(upperfirst(param_name))
+                            else:
+                                params += "paramReader.get{}()".format(upperfirst(param_name))
+                            if list(param_info.keys())[-1] != param_name:
+                                params += ", "
+                    elif param_category == RPCType.CapnpNative:
+                        cases_str += "\t\t\t\t\t::capnp::FlatArrayMessageReader reader(asCapnpArr(paramBuf));\n"
+                        params = "reader"
                 return_expr = ""
-                if "returns" in rpc_info:
+
+                if returns_category == RPCType.Void:
+                    pass
+                elif returns_category == RPCType.Dict:
                     return_expr = "auto ret = "
+                elif returns_category == RPCType.CapnpNative:
+                    cases_str += "\t\t\t\t\tNativeCapnpMsgWriter writer(routerId, m_zmqRepSocket);\n"
+                    params += ", "
+                    params += "writer"
+                elif returns_category == RPCType.DirectType:
+                    return_expr = "auto ret = "
+
                 cases_str += "\t\t\t\t\t{}{}->{}({});\n".format(return_expr, create_member_cb_if(service_name), rpc_name, params)
-                if "returns" in rpc_info:
+                if returns_category == RPCType.Dict:
                     cases_str += "\t\t\t\t\t::capnp::MallocMessageBuilder retMessage;\n"
                     cases_str += "\t\t\t\t\tauto builder = retMessage.initRoot<{}>();\n".format(create_capnp_rpc_return_type_str(service_name, rpc_name))
                     for return_name, return_type in rpc_info["returns"].items():
@@ -74,12 +107,17 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
     for service_name in data["services"]:
         if "signal" in data["services"][service_name]:
             for signal_name in data["services"][service_name]["signal"]:
-                signal_fn_definitions += "void {0}Server::Signals::{1}__{2}({3})\n".format(file_we, service_name, signal_name, create_fn_parameter_str(data["services"][service_name]["signal"][signal_name]))
-                signal_fn_definitions += "{\n"
                 signal_info = data["services"][service_name]["signal"][signal_name]
+                signal_fn_definitions += "\n"
+                signal_fn_definitions += "void {0}Server::Signals::{1}__{2}({3})\n".format(file_we, service_name, signal_name, create_fn_input_parameter_str_sender(signal_info))
+                signal_fn_definitions += "{\n"
                 send_flag = "zmq::send_flags::sndmore" if ("parameter" in signal_info) else "zmq::send_flags::none"
                 signal_fn_definitions += "\tm_rZmqPubSocket.send(zmq::const_buffer(\"{}{}\", {}), {});\n".format(service_name, signal_name, len(service_name) + len(signal_name), send_flag)
-                if "parameter" in signal_info:
+
+                signal_param_category = rpc_param_type(signal_info)
+                if signal_param_category == RPCType.Void:
+                    pass
+                elif signal_param_category == RPCType.Dict:
                     signal_fn_definitions += "\t::capnp::MallocMessageBuilder message;\n"
                     signal_fn_definitions += "\tauto builder = message.initRoot<{}>();\n".format(format(create_capnp_signal_param_type_str(service_name, signal_name)))
                     for param_name, param_type in signal_info["parameter"].items():
@@ -88,7 +126,9 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
                         else:
                             signal_fn_definitions += "\tbuilder.set{}({});\n".format(upperfirst(param_name), param_name)
                     signal_fn_definitions += "\tsendOverZmq(message, m_rZmqPubSocket, zmq::send_flags::none);\n"
-                signal_fn_definitions += "}\n\n"
+                elif signal_param_category == RPCType.CapnpNative:
+                    signal_fn_definitions += "\tsendOverZmq(sndData, m_rZmqPubSocket, zmq::send_flags::none);\n"
+                signal_fn_definitions += "}\n"
 
     server_constructor_definition = ""
     if has_rpc and has_signal_handling:

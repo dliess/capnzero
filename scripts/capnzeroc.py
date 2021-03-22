@@ -59,18 +59,19 @@ with open(client_inl_file, 'w') as open_file:
 with open(client_cpp_file, 'w') as open_file:
     open_file.write(create_capnzero_client_file_cpp_content_str(data, file_we))
 
-with open(server_h_file, 'w') as open_file:
-    open_file.write(create_capnzero_server_file_h_content_str(data, file_we))
-
-with open(server_cpp_file, 'w') as open_file:
-    open_file.write(create_capnzero_server_file_cpp_content_str(data, file_we))
-
 for service_name in data["services"]:
     service = data["services"][service_name]
     if "rpc" in service:
         rpc_if_filename_we = file_we + create_member_cb_if_type(service_name)
         with open(outdir + "/" + rpc_if_filename_we + ".h", 'w') as open_file:
             open_file.write(create_capnzero_cbif_h_content_str(service_name, service["rpc"], rpc_if_filename_we, file_we))
+
+with open(server_h_file, 'w') as open_file:
+    open_file.write(create_capnzero_server_file_h_content_str(data, file_we))
+
+with open(server_cpp_file, 'w') as open_file:
+    open_file.write(create_capnzero_server_file_cpp_content_str(data, file_we))
+
 
 with open(qobject_client_h_file, 'w') as open_file:
     open_file.write(create_capnzero_qobject_client_file_h_content_str(data, file_we))

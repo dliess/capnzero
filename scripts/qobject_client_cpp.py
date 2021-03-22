@@ -59,7 +59,7 @@ def create_capnzero_qobject_client_file_cpp_content_str(data, file_we):
                 return_type_str = create_rpc_return_type_for_qt_webchannel_obj(rpc_info)
                 parameter_str = ""
                 if "parameter" in rpc_info:
-                    parameter_str = create_fn_parameter_str(rpc_info)
+                    parameter_str = create_fn_parameter_str_from_dict(rpc_info)
                 method_name = service_name + "__" + rpc_name
                 qinvokable_definitions += return_type_str
                 qinvokable_definitions += " " if len(return_type_str) < 40 else ("\n")
