@@ -32,6 +32,9 @@ print("outdir: " + outdir)
 print("descrfile: " + descrfile)
 print("file_we: " + file_we)
 
+from pathlib import Path
+Path(outdir).mkdir(parents=True, exist_ok=True)
+
 capnp_file = outdir + "/" + file_we + ".capnp"
 client_h_file = outdir + "/" + file_we + "_Client.h"
 client_inl_file = outdir + "/" + file_we + "_Client.inl"
