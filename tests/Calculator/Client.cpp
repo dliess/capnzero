@@ -8,12 +8,12 @@ int main()
 {
     zmq::context_t context;
     CalculatorClient client(context, "tcp://localhost:5555", "tcp://localhost:5556");
-    std::cout << client.Calculator__add(47, 333).ret << "\n";
+    std::cout << client.add(47, 333).ret << "\n";
     ::capnp::MallocMessageBuilder msg;
     auto builder = msg.initRoot<TwoIntParams>();
     builder.setA(3);
     builder.setB(4);
-    std::cout << client.Calculator__multiply2(msg).ret << "\n";
+    std::cout << client.multiply2(msg).ret << "\n";
     
 
     client.onScreenBrightnessChanged([](capnzero::UInt32 brightness){

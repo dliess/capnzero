@@ -18,15 +18,15 @@ def create_protected_section_rpc_def(data, file_we):
         if "rpc" in data["services"][service_name]:
             for rpc_name in data["services"][service_name]["rpc"]:
                 rpc_info = data["services"][service_name]["rpc"][rpc_name]
-                method_name = service_name + "__" + rpc_name
+                method_name = create_rpc_method_name(service_name, rpc_name)
                 rpc_coord_send_str = """\
     ::capnp::MallocMessageBuilder message;
     auto builder = message.initRoot<RpcCoord>();
     builder.setServiceId(to_underlying(ServiceId::{0}));
-    builder.setRpcId(to_underlying({1}RpcIds::{2}));
+    builder.setRpcId(to_underlying({1}::{2}));
     sendOverZmq(message, m_zmqReqSocket, {3});
-""".format(to_snake_case(service_name).upper(), \
-          service_name, \
+""".format(create_rpc_service_id_enum(service_name), \
+          create_rpc_id_enum(service_name), \
           to_snake_case(rpc_name).upper(), \
           "zmq::send_flags::sndmore" if "parameter" in rpc_info else "zmq::send_flags::none")
 

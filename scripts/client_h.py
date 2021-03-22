@@ -8,7 +8,7 @@ def create_protected_section_rpc_decl(data):
         if "rpc" in data["services"][service_name]:
             for rpc_name in data["services"][service_name]["rpc"]:
                 rpc_info = data["services"][service_name]["rpc"][rpc_name]
-                method_name = service_name + "__" + rpc_name
+                method_name = create_rpc_method_name(service_name, rpc_name)
                 if ("parameter" in rpc_info) and ("returns" in rpc_info):
                     ret += "\ttemplate<typename Callable>\n"
                     ret += "\tvoid _{0}(capnp::MessageBuilder& sndData, Callable&& rcvCb);\n".format(method_name)
@@ -61,7 +61,7 @@ def create_capnzero_client_file_h_content_str(data, file_we):
                         public_section_rpc += "\ttemplate<typename Callable>\n"
                         parameter_str += ", "
                     parameter_str += param2
-                    method_name = service_name + "__" + rpc_name
+                    method_name = create_rpc_method_name(service_name, rpc_name)
                     public_section_rpc +=  "\t" + return_type_str
                     public_section_rpc += " " if len(return_type_str) < 8 else "\n\t"
                     public_section_rpc += method_name + "(" + parameter_str + ");\n"
@@ -96,7 +96,7 @@ private:
                         signal_info = data["services"][service_name]["signal"][signal_name]
                         cb_type_name = create_signal_cb_type(service_name, signal_name)
                         public_section_signal += "\tusing {} = std::function<void({})>;\n".format(cb_type_name, create_rpc_handler_fn_arguments_str(signal_info))
-                        cb_register_fn_name = "on{}{}".format(upperfirst(service_name), upperfirst(signal_name))
+                        cb_register_fn_name =  create_signal_registration_method_name(service_name, signal_name)
                         public_section_signal += "\tvoid {}({} cb);\n".format(cb_register_fn_name, cb_type_name)
 
         signal_handling_cb_members = ""

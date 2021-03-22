@@ -168,10 +168,10 @@ void {0}ClientSignalsThreaded::handleSubscriptionRequest(zmq::socket_t& zmqSubHe
         if "signal" in data["services"][service_name]:
             for signal_name in data["services"][service_name]["signal"]:
                 signal_info = data["services"][service_name]["signal"][signal_name]
-                cb_type_name = "{}{}Cb".format(upperfirst(service_name), upperfirst(signal_name))
-                cb_register_fn_name = "on{}{}".format(upperfirst(service_name), upperfirst(signal_name))
+                cb_type_name = create_signal_cb_type(service_name, signal_name)
+                cb_register_fn_name = create_signal_registration_method_name(service_name, signal_name)
                 cb_member = "m_{}".format(lowerfirst(cb_type_name))
-                zmq_sub_key = "{}{}".format(service_name, signal_name)
+                zmq_sub_key = create_signal_method_name(service_name, signal_name)
                 outStr += """\
 void {0}ClientSignals::{1}({2} cb)
 {{

@@ -15,27 +15,30 @@ struct TwoIntParams{
 
 # parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
 [services]
-    [services.Calculator.rpc.add]
+    [services._.rpc.add]
         parameter = { a = 'Int32', b = 'Int32' }
         returns = { ret = 'Int32' }
-    [services.Calculator.rpc.sub]
+    [services._.rpc.sub]
         parameter = { a = 'Int32', b = 'Int32' }
         returns = { ret = 'Int32' }
 
-    [services.Calculator.rpc.multiply]
+    [services._.rpc.multiply]
         parameter = '__capnp__native__'
 
-    [services.Calculator.rpc.multiply2]
+    [services._.rpc.multiply2]
         parameter = '__capnp__native__'
         returns = { ret = 'Int32' }
 
-    [services.Calculator.rpc.multiply3]
+    [services._.rpc.multiply3]
         parameter = { a = 'Int32', b = 'Int32' }
         returns = '__capnp__native__'
 
-    [services.Calculator.rpc.multiply4]
+    [services._.rpc.multiply4]
         parameter = '__capnp__native__'
         returns = '__capnp__native__'
+
+    [services._.signal.justASignal]
+
 
     [services.Screen.signal.listChanged]
         parameter = '__capnp__native__'

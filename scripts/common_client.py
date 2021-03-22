@@ -9,10 +9,19 @@ def should_be_template(rpc_info):
     return False
 
 def public_method_name(service_name, rpc_name):
-    return service_name + "__" + rpc_name
+    if service_name == "_":
+        return rpc_name
+    else:
+        return service_name + "__" + rpc_name
 
 def protected_method_name(service_name, rpc_name):
     return "_" + public_method_name(service_name, rpc_name)
+
+def create_signal_registration_method_name(service_name, signal_name):
+    if service_name == "_":
+        return "on{}".format(upperfirst(signal_name))
+    else:
+        return "on{}{}".format(upperfirst(service_name), upperfirst(signal_name))
 
 def create_return_type_str_client(rpc_info, service_name, rpc_name, class_namespace = None):
     return_type = rpc_return_type(rpc_info)

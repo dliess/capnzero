@@ -9,7 +9,7 @@ def create_rpc_declarations_for_qt_webchannel_obj(data, tabs, prefix):
                 rpc_info = data["services"][service_name]["rpc"][rpc_name]
                 return_type_str = create_rpc_return_type_for_qt_webchannel_obj(rpc_info)
                 parameter_str = create_fn_parameter_str_from_dict(rpc_info, map_type_to_qt_type)
-                method_name = service_name + "__" + rpc_name
+                method_name = create_rpc_method_name(service_name, rpc_name)
                 ret_str +=  tabs + prefix + " " + return_type_str
                 ret_str += " " if len(prefix + " " + return_type_str) < 40 else ("\n" + tabs)
                 ret_str += method_name + "(" + parameter_str + ");\n"

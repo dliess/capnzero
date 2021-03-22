@@ -25,13 +25,13 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
     cases_str = ""
     for service_name in data["services"]:
         if "rpc" in data["services"][service_name]:
-            cases_str += "\t\tcase to_underlying(ServiceId::{}):\n".format(to_snake_case(service_name).upper())
+            cases_str += "\t\tcase to_underlying(ServiceId::{}):\n".format(create_rpc_service_id_enum(service_name))
             cases_str +=  "\t\t{\n"
             cases_str += "\t\t\tswitch(coordReader.getRpcId())\n"
             cases_str += "\t\t\t{\n"
             for rpc_name in data["services"][service_name]["rpc"]:
                 rpc_info = data["services"][service_name]["rpc"][rpc_name]
-                cases_str += "\t\t\t\tcase to_underlying({0}RpcIds::{1}):\n".format(service_name, to_snake_case(rpc_name).upper())
+                cases_str += "\t\t\t\tcase to_underlying({0}::{1}):\n".format(create_rpc_id_enum(service_name), to_snake_case(rpc_name).upper())
                 cases_str += "\t\t\t\t{\n"
 
                 params = ""
@@ -109,10 +109,10 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
             for signal_name in data["services"][service_name]["signal"]:
                 signal_info = data["services"][service_name]["signal"][signal_name]
                 signal_fn_definitions += "\n"
-                signal_fn_definitions += "void {0}Server::Signals::{1}__{2}({3})\n".format(file_we, service_name, signal_name, create_fn_input_parameter_str_sender(signal_info))
+                signal_fn_definitions += "void {0}Server::Signals::{1}({2})\n".format(file_we, create_signal_method_name(service_name, signal_name), create_fn_input_parameter_str_sender(signal_info))
                 signal_fn_definitions += "{\n"
                 send_flag = "zmq::send_flags::sndmore" if ("parameter" in signal_info) else "zmq::send_flags::none"
-                signal_fn_definitions += "\tm_rZmqPubSocket.send(zmq::const_buffer(\"{}{}\", {}), {});\n".format(service_name, signal_name, len(service_name) + len(signal_name), send_flag)
+                signal_fn_definitions += "\tm_rZmqPubSocket.send(zmq::const_buffer(\"{}\", {}), {});\n".format(create_signal_method_name(service_name, signal_name), len(service_name) + len(signal_name), send_flag)
 
                 signal_param_category = rpc_param_type(signal_info)
                 if signal_param_category == RPCType.Void:

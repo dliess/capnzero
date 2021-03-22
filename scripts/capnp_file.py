@@ -16,7 +16,7 @@ $Cxx.namespace("capnzero::{}");
     # Create capnp enum for ServiceId 
     service_enum_str = "enum ServiceId {\n"
     for idx, service_name in enumerate(data["services"]):
-        service_enum_str += "\t" + lowerfirst(service_name) + " @" + str(idx) + ";\n"
+        service_enum_str += "\t" + create_rpc_service_id_capnp_enum(service_name) + " @" + str(idx) + ";\n"
     service_enum_str += "}\n"
 
     outStr += service_enum_str
