@@ -9,7 +9,7 @@ project(capnzero
 include(cmake/CPM.cmake)
 
 CPMFindPackage(
-    NAME capnproto
+    NAME CapnProto
     GITHUB_REPOSITORY capnproto/capnproto
     VERSION 0.7.0
 )
@@ -37,7 +37,11 @@ CPMFindPackage(
 
 add_library(${PROJECT_NAME} INTERFACE)
 
-target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME}
+  INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
+)
 
 set(GENERATOR_SCRIPT_PATH ${CMAKE_CURRENT_LIST_DIR}/scripts/capnzeroc.py)
 
@@ -45,3 +49,25 @@ option(CAPNZERO_BUILD_TESTS "Capnzero build tests" ON)
 if(${CAPNZERO_BUILD_TESTS})
   add_subdirectory(tests)
 endif()
+
+######################################################
+#Install target
+######################################################
+
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}-targets
+  INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}"
+)
+
+install(DIRECTORY include/
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}"
+)
+
+install(EXPORT ${PROJECT_NAME}-targets
+    NAMESPACE
+        CAPNZERO::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+)
+
+install(FILES "cmake/${PROJECT_NAME}-config.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+)

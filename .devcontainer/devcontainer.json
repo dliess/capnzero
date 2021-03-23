@@ -7,7 +7,7 @@
        "GID": "1000",
              },
        },
-    "runArgs" : ["--privileged" ],
+    "runArgs" : [ "--rm", "--privileged" ],
     "settings": { 
        "terminal.integrated.shell.linux": "/bin/zsh"
     },
