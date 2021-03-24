@@ -15,8 +15,8 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
     for service_name in data["services"]:
         if "rpc" in data["services"][service_name]:
             constructor_parameters += "std::unique_ptr<{}> {}".format(create_member_cb_if_type(service_name), \
-                                                                lowerfirst(service_name))
-            constructor_initializer_list += "\t{}(std::move({})),".format(create_member_cb_if(service_name), lowerfirst(service_name))
+                                                                create_var_name_from_service(service_name))
+            constructor_initializer_list += "\t{}(std::move({})),".format(create_member_cb_if(service_name), create_var_name_from_service(service_name))
 
             if list(data["services"].keys())[-1] != service_name:
                 constructor_parameters += ", "
@@ -112,7 +112,8 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
                 signal_fn_definitions += "void {0}Server::Signals::{1}({2})\n".format(file_we, create_signal_method_name(service_name, signal_name), create_fn_input_parameter_str_sender(signal_info))
                 signal_fn_definitions += "{\n"
                 send_flag = "zmq::send_flags::sndmore" if ("parameter" in signal_info) else "zmq::send_flags::none"
-                signal_fn_definitions += "\tm_rZmqPubSocket.send(zmq::const_buffer(\"{}\", {}), {});\n".format(create_signal_method_name(service_name, signal_name), len(service_name) + len(signal_name), send_flag)
+                signal_key = create_signal_key_name(service_name, signal_name)
+                signal_fn_definitions += "\tm_rZmqPubSocket.send(zmq::const_buffer(\"{}\", {}), {});\n".format(signal_key, len(signal_key), send_flag)
 
                 signal_param_category = rpc_param_type(signal_info)
                 if signal_param_category == RPCType.Void:

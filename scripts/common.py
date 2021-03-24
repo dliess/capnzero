@@ -78,10 +78,18 @@ def create_signal_method_name(service_name, signal_name):
     else:
         return service_name + "__" + signal_name
 
+def create_signal_key_name(service_name, signal_name):
+    return create_signal_method_name(service_name, signal_name)
 
 def create_rpc_service_id_capnp_enum(service_name):
     if service_name == "_":
         return "main"
+    else:
+        return lowerfirst(service_name)
+
+def create_var_name_from_service(service_name):
+    if service_name == "_":
+        return "_"
     else:
         return lowerfirst(service_name)
 

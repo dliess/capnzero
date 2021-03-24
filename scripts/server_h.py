@@ -1,6 +1,7 @@
 import global_types
 from common import *
 
+
 def create_capnzero_server_file_h_content_str(data, file_we):
     has_rpc = False
     has_signal_handling = False
@@ -17,7 +18,7 @@ def create_capnzero_server_file_h_content_str(data, file_we):
         if "rpc" in data["services"][service_name]:
             cbif_includes += "#include \"{}{}.h\"\n".format(file_we, create_member_cb_if_type(service_name))
             constructor_parameters += "std::unique_ptr<{}> {}".format(create_member_cb_if_type(service_name), \
-                                                                      lowerfirst(service_name))
+                                                                      create_var_name_from_service(service_name))
             if list(data["services"].keys())[-1] != service_name:
                 constructor_parameters += ", "
             cbif_members += "\tstd::unique_ptr<{}> {};\n".format(create_member_cb_if_type(service_name), \

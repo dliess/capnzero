@@ -19,6 +19,7 @@ int main()
     client.onScreenBrightnessChanged([](capnzero::UInt32 brightness){
         std::cout << "brightness changed received: " << brightness << "\n";
     });
+    std::this_thread::sleep_for (std::chrono::milliseconds(1));
     for(int i = 0; i  < 20; ++i)
     {
         client.Screen__setBrightness(i);

@@ -11,7 +11,7 @@ def create_string_comparisons(data, zmqSubSocket):
                 cb_type_name = "{}{}Cb".format(upperfirst(service_name), upperfirst(signal_name))
                 cb_register_fn_name = "on{}{}".format(upperfirst(service_name), upperfirst(signal_name))
                 cb_member = "m_{}".format(lowerfirst(cb_type_name))
-                zmq_sub_key = "{}{}".format(service_name, signal_name)
+                zmq_sub_key = create_signal_key_name(service_name, signal_name)
                 string_comparisons += "\t{}(key == \"{}\"){{\n".format("if" if (string_comparisons == "") else "else if", zmq_sub_key)
                 cb_call_params = ""
                 if "parameter" in signal_info:
