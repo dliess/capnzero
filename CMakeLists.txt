@@ -14,10 +14,10 @@ CPMFindPackage(
     VERSION 0.7.0
 )
 
-if (capnproto_ADDED)
+if (CapnProto_ADDED)
   add_executable(CapnProto::capnpc_cpp ALIAS capnpc_cpp)
   add_executable(CapnProto::capnp_tool ALIAS capnp_tool)
-endif (capnproto_ADDED)
+endif ()
 
 #CPMFindPackage(
 #  NAME libzmq
@@ -40,8 +40,10 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME}
   INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>"
 )
+
+add_library(CAPNZERO::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 set(GENERATOR_SCRIPT_PATH ${CMAKE_CURRENT_LIST_DIR}/scripts/capnzeroc.py)
 
@@ -58,8 +60,14 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}-targets
   INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}"
 )
 
-install(DIRECTORY include/
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}"
+install(
+  FILES 
+    "include/capnzero_typedefs.h"
+    "include/capnzero_utils.h"
+    "include/error_msg.hpp"
+    "include/span.h"
+  DESTINATION 
+    "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}"
 )
 
 install(EXPORT ${PROJECT_NAME}-targets
