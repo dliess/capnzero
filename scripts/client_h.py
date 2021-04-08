@@ -41,20 +41,22 @@ def create_capnzero_client_file_h_content_str(data, file_we):
             if "rpc" in data["services"][service_name]:
                 for rpc_name in data["services"][service_name]["rpc"]:
                     rpc_info = data["services"][service_name]["rpc"][rpc_name]
-                    return_type_str = "void"
+                    return_type_str = create_return_type_str_client(rpc_info, service_name, rpc_name)
                     param1 = ""
                     param2 = ""
-                    if "returns" in rpc_info:
-                        members = rpc_info["returns"]
-                        if isinstance(members, dict):
-                            return_type_str = create_return_type_str_client(rpc_info, service_name, rpc_name)
-                            return_struct_str = "\tstruct " + return_type_str + " {\n"
-                            for member_name, member_type in members.items():
-                                return_struct_str += "\t\t" + map_2_ret_type(member_type) + " " + member_name + ";\n"  
-                            return_struct_str += "\t};\n"
-                            public_section_rpc += return_struct_str
-                        elif members == '__capnp__native__':
-                            param2 = "Callable&& retCb"
+                    return_type = rpc_return_type(rpc_info)
+                    if return_type == RPCType.Void:
+                        pass
+                    elif return_type == RPCType.Dict:
+                        return_struct_str = "\tstruct " + return_type_str + " {\n"
+                        for member_name, member_type in rpc_info["returns"].items():
+                            return_struct_str += "\t\t" + map_2_ret_type(member_type) + " " + member_name + ";\n"  
+                        return_struct_str += "\t};\n"
+                        public_section_rpc += return_struct_str
+                    elif return_type == RPCType.CapnpNative:
+                        param2 = "Callable&& retCb"
+                    elif return_type == RPCType.DirectType:
+                        pass
 
                     parameter_str = create_fn_parameter_str_from_dict(rpc_info)
                     if param2 != "":

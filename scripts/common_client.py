@@ -95,11 +95,17 @@ def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we):
     elif return_type == RPCType.CapnpNative:
         param2 += "\t\tcb"
     elif return_type == RPCType.DirectType:
-        param2 += """\
-        [&retVal](capnp::MessageReader& message){{
-            retVal = message.get{}();
-        }}
-""".format(upperfirst(rpc_info["returns"])) # TODO: for vector/Data type
+        lambda_content = ""
+        lambda_content += "\tauto reader = message.getRoot<{}>();\n".format(create_capnp_rpc_return_type_str(service_name, rpc_name))
+        member_name = "retParam"
+        member_type = rpc_info["returns"]
+        if map_descr_type_to_capnp_type(member_type) == 'Data':
+            lambda_content += "\t\t\tauto src = reader.get{}();\n".format(upperfirst(member_name))
+            lambda_content += "\t\t\tassert(src.size() == retVal.{}.size());\n".format(member_name)
+            lambda_content += "\t\t\tstd::copy(src.begin(), src.end(), retVal.{}.begin());\n".format(member_name)
+        else:
+            lambda_content += "\t\t\tretVal = reader.get{0}();\n".format(upperfirst(member_name))
+        param2 += "\t\t[&retVal](capnp::MessageReader& message){{\n\t\t{0}\n\t}}".format(lambda_content)
 
     if param1 != "" and param2 != "":
         param1 += ", "

@@ -22,6 +22,20 @@ struct TwoIntParams{
         parameter = { a = 'Int32', b = 'Int32' }
         returns = { ret = 'Int32' }
 
+    [services._.rpc.addDirectRet]
+        parameter = { a = 'Int32', b = 'Int32' }
+        returns = 'Int32'
+    [services._.rpc.subDirectRet]
+        parameter = { a = 'Int32', b = 'Int32' }
+        returns = 'Int32'
+    [services.DirectRet.rpc.add]
+        parameter = { a = 'Int32', b = 'Int32' }
+        returns = 'Int32'
+    [services.DirectRet.rpc.sub]
+        parameter = { a = 'Int32', b = 'Int32' }
+        returns = 'Int32'
+
+
     [services._.rpc.multiply]
         parameter = '__capnp__native__'
 

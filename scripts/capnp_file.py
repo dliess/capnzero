@@ -62,11 +62,21 @@ $Cxx.namespace("capnzero::{}");
                         parameter_struct_str += "\t" + key + " @" + str(idx) + " :" + map_descr_type_to_capnp_type(params[key]) + ";\n"  
                     parameter_struct_str += "}\n"
                     outStr += parameter_struct_str
-                if "returns" in rpc_info and isinstance(rpc_info["returns"], dict):
+                return_type = rpc_return_type(rpc_info)
+                if return_type == RPCType.Void:
+                    pass
+                elif return_type == RPCType.Dict:
                     return_struct_str = "struct " + create_capnp_rpc_return_type_str(service_name, rpc_name) + " {\n"
                     members = rpc_info["returns"]
                     for idx, key in enumerate(members.keys()):
                         return_struct_str += "\t" + key + " @" + str(idx) + " :" + map_descr_type_to_capnp_type(members[key]) + ";\n"  
+                    return_struct_str += "}\n"
+                    outStr += return_struct_str
+                elif return_type == RPCType.CapnpNative:
+                    pass
+                elif return_type == RPCType.DirectType:
+                    return_struct_str = "struct " + create_capnp_rpc_return_type_str(service_name, rpc_name) + " {\n"
+                    return_struct_str += "\tretParam @0 :" + map_descr_type_to_capnp_type(rpc_info["returns"]) + ";\n"  
                     return_struct_str += "}\n"
                     outStr += return_struct_str
 
