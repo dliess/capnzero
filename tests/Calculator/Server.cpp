@@ -16,6 +16,16 @@ public:
         return {a - b};
     }
 
+    Int32 addDirectRet(Int32 a, Int32 b) override
+    {
+        return a + b;
+    }
+
+    Int32 subDirectRet(Int32 a, Int32 b) override
+    {
+        return a - b;
+    }
+
 	void multiply(::capnp::MessageReader& recvData) override
     {
 
@@ -42,6 +52,20 @@ public:
         auto builder = message.initRoot<OneIntParam>();
         builder.setA(reader.getA() * reader.getB());
         writer.write(message);
+    }
+};
+
+class DirectRetImpl : public DirectRetRpcIf
+{
+public:
+    Int32 add(Int32 a, Int32 b) override
+    {
+        return a + b;
+    }
+
+    Int32 sub(Int32 a, Int32 b) override
+    {
+        return a - b;
     }
 };
 
@@ -90,6 +114,7 @@ int main()
                             "tcp://*:5555",
                             "tcp://*:5556",
                             std::make_unique<CalculatorImpl>(),
+                            std::make_unique<DirectRetImpl>(),
                             std::make_unique<ScreenImpl>(server.signals()));
 
     while(true)

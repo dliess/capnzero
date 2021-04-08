@@ -36,22 +36,7 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
 
                 params = ""
                 param_category = rpc_param_type(rpc_info)
-                if param_category == RPCType.Void:
-                    pass
-                elif param_category == RPCType.Dict:
-                    pass
-                elif param_category == RPCType.CapnpNative:
-                    pass
-
                 returns_category =  rpc_return_type(rpc_info)
-                if returns_category == RPCType.Void:
-                    pass
-                elif returns_category == RPCType.Dict:
-                    pass
-                elif returns_category == RPCType.CapnpNative:
-                    pass
-                elif returns_category == RPCType.DirectType:
-                    pass
 
                 if param_category != RPCType.Void:                   
                     cases_str += "\t\t\t\t\tzmq::message_t paramBuf;\n"
@@ -87,14 +72,22 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
                     return_expr = "auto ret = "
 
                 cases_str += "\t\t\t\t\t{}{}->{}({});\n".format(return_expr, create_member_cb_if(service_name), rpc_name, params)
-                if returns_category == RPCType.Dict:
+                if returns_category == RPCType.Dict or returns_category == RPCType.DirectType:
                     cases_str += "\t\t\t\t\t::capnp::MallocMessageBuilder retMessage;\n"
                     cases_str += "\t\t\t\t\tauto builder = retMessage.initRoot<{}>();\n".format(create_capnp_rpc_return_type_str(service_name, rpc_name))
-                    for return_name, return_type in rpc_info["returns"].items():
+                    if returns_category == RPCType.Dict:
+                        for return_name, return_type in rpc_info["returns"].items():
+                            if map_descr_type_to_capnp_type(return_type) == "Data":
+                                cases_str += "\t\t\t\t\tbuilder.set{0}(capnp::Data::Reader(ret.{1}.data(), ret.{1}.size()));\n".format(upperfirst(return_name), return_name)
+                            else:
+                                cases_str += "\t\t\t\t\tbuilder.set{}(ret.{});\n".format(upperfirst(return_name), return_name)
+                    elif returns_category == RPCType.DirectType:
+                        return_name = "retParam"
+                        return_type = rpc_info["returns"]
                         if map_descr_type_to_capnp_type(return_type) == "Data":
                             cases_str += "\t\t\t\t\tbuilder.set{0}(capnp::Data::Reader(ret.{1}.data(), ret.{1}.size()));\n".format(upperfirst(return_name), return_name)
                         else:
-                            cases_str += "\t\t\t\t\tbuilder.set{}(ret.{});\n".format(upperfirst(return_name), return_name)
+                            cases_str += "\t\t\t\t\tbuilder.set{}(ret);\n".format(upperfirst(return_name))
                     cases_str += "\t\t\t\t\tm_zmqRepSocket.send(routerId, zmq::send_flags::sndmore);\n"
                     cases_str += "\t\t\t\t\tsendOverZmq(retMessage, m_zmqRepSocket, zmq::send_flags::none);\n"
                 cases_str += "\t\t\t\t\tbreak;\n"
