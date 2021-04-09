@@ -2,29 +2,7 @@ import global_types
 from common import *
 from common_client import *
 
-def create_protected_section_rpc_decl(data):
-    ret = ""
-    for service_name in data["services"]:
-        if "rpc" in data["services"][service_name]:
-            for rpc_name in data["services"][service_name]["rpc"]:
-                rpc_info = data["services"][service_name]["rpc"][rpc_name]
-                method_name = create_rpc_method_name(service_name, rpc_name)
-                if ("parameter" in rpc_info) and ("returns" in rpc_info):
-                    ret += "\ttemplate<typename Callable>\n"
-                    ret += "\tvoid _{0}(capnp::MessageBuilder& sndData, Callable&& rcvCb);\n".format(method_name)
-                elif "parameter" in rpc_info:
-                    ret += "\tinline\n"
-                    ret += "\tvoid _{0}(capnp::MessageBuilder& sndData);\n".format(method_name)
-                elif "returns" in rpc_info:
-                    ret += "\ttemplate<typename Callable>\n"
-                    ret += "\tvoid _{0}(Callable&& rcvCb);\n".format(method_name)
-                else:
-                    ret += "\tinline\n"
-                    ret += "\tvoid _{0}();\n".format(method_name)
-    return ret
-
 def create_capnzero_client_file_h_content_str(data, file_we):
-
     has_rpc = False
     has_signal_handling = False
     for service_name in data["services"]:
@@ -36,7 +14,6 @@ def create_capnzero_client_file_h_content_str(data, file_we):
     client_rpc_class = ""
     if has_rpc:
         public_section_rpc = ""
-        protected_section_rpc_decl = create_protected_section_rpc_decl(data)
         for service_name in data["services"]:
             if "rpc" in data["services"][service_name]:
                 for rpc_name in data["services"][service_name]["rpc"]:
@@ -70,22 +47,20 @@ def create_capnzero_client_file_h_content_str(data, file_we):
                     public_section_rpc += "\n"
 
         client_rpc_class = """\
+#include "{0}_ClientTransport.h"
 namespace capnzero::{0}
 {{
 
-class {0}ClientRpc
+class {0}ClientRpc : public {0}ClientRpcTransport
 {{
 public:
-    {0}ClientRpc(zmq::context_t& rZmqContext, const std::string& serverRpcAddr);  
+    using Super = {0}ClientRpcTransport;
+    {0}ClientRpc(zmq::context_t& rZmqContext, const std::string& serverRpcAddr);
 {1}
-protected:
-{2}
-private:
-    zmq::socket_t m_zmqReqSocket;
 }};
 
 }} // namespace capnzero::{0}
-""".format(file_we, public_section_rpc, protected_section_rpc_decl)
+""".format(file_we, public_section_rpc)
 
     client_signal_threaded_class = ""
     client_signal_class = ""

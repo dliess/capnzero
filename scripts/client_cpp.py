@@ -65,9 +65,8 @@ using namespace capnzero::{0};
     if has_rpc:
         outStr += """\
 {0}ClientRpc::{0}ClientRpc(zmq::context_t& rZmqContext, const std::string& serverRpcAddr):
-    m_zmqReqSocket(rZmqContext, zmq::socket_type::dealer)
+    Super(rZmqContext, serverRpcAddr)
 {{
-    m_zmqReqSocket.connect(serverRpcAddr);
 }}
 """.format(file_we)
 

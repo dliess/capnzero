@@ -42,6 +42,8 @@ function(capnzero_generate_cpp)
     "${GENERATOR_SCRIPT_DIR}/capnp_file.py"
     "${GENERATOR_SCRIPT_DIR}/capnzeroc.py"
     "${GENERATOR_SCRIPT_DIR}/client_cpp.py"
+    "${GENERATOR_SCRIPT_DIR}/client_transport_h.py"
+    "${GENERATOR_SCRIPT_DIR}/client_transport_inl.py"
     "${GENERATOR_SCRIPT_DIR}/client_h.py"
     "${GENERATOR_SCRIPT_DIR}/client_inl.py"
     "${GENERATOR_SCRIPT_DIR}/common_client.py"
@@ -57,7 +59,10 @@ function(capnzero_generate_cpp)
   set(GEN_CAPNP_FILE "${_GEN_OUTPUT_DIR}/${FIL_WLE}.capnp")
   add_custom_command(
     OUTPUT  "${GEN_CAPNP_FILE}"
+            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_ClientTransport.h"
+            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_ClientTransport.inl"
             "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.h"
+            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.inl"
             "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.cpp"
             "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.h"
             "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.cpp"
@@ -117,7 +122,10 @@ function(capnzero_generate_cpp)
   endif()
   if(ARG_GEN_CPP_HEADERS)
     list(APPEND ${ARG_GEN_CPP_HEADERS} "${GEN_CAPNP_FILE}.h")
+    list(APPEND ${ARG_GEN_CPP_HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_ClientTransport.h")
+    list(APPEND ${ARG_GEN_CPP_HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_ClientTransport.inl")
     list(APPEND ${ARG_GEN_CPP_HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.h")
+    list(APPEND ${ARG_GEN_CPP_HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.inl")
     list(APPEND ${ARG_GEN_CPP_HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.h")
     set(${ARG_GEN_CPP_HEADERS} ${${ARG_GEN_CPP_HEADERS}} PARENT_SCOPE)
   endif()

@@ -8,6 +8,8 @@ import re
 import global_types
 from common import *
 from capnp_file import *
+from client_transport_h import *
+from client_transport_inl import *
 from client_h import *
 from client_inl import *
 from client_cpp import *
@@ -36,6 +38,8 @@ from pathlib import Path
 Path(outdir).mkdir(parents=True, exist_ok=True)
 
 capnp_file = outdir + "/" + file_we + ".capnp"
+client_transport_h_file = outdir + "/" + file_we + "_ClientTransport.h"
+client_transport_inl_file = outdir + "/" + file_we + "_ClientTransport.inl"
 client_h_file = outdir + "/" + file_we + "_Client.h"
 client_inl_file = outdir + "/" + file_we + "_Client.inl"
 client_cpp_file = outdir + "/" + file_we + "_Client.cpp"
@@ -52,6 +56,12 @@ if "enumerations" in data:
 
 with open(capnp_file, 'w') as open_file:
     open_file.write(create_capnp_file_content_str(data, file_we))
+
+with open(client_transport_h_file, 'w') as open_file:
+    open_file.write(create_capnzero_client_transport_file_h_content_str(data, file_we))
+
+with open(client_transport_inl_file, 'w') as open_file:
+    open_file.write(create_capnzero_client_transport_file_inl_content_str(data, file_we))
 
 with open(client_h_file, 'w') as open_file:
     open_file.write(create_capnzero_client_file_h_content_str(data, file_we))
