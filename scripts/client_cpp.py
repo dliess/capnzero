@@ -20,7 +20,8 @@ def create_string_comparisons(data, zmqSubSocket):
                     string_comparisons += "\t\tauto res2 = {}.recv(paramBuf, zmq::recv_flags::none);\n".format(zmqSubSocket)
                     string_comparisons += "\t\tif (!res2) { throw std::runtime_error(\"No received msg\"); }\n"
                     if isinstance(signal_info["parameter"], dict):
-                        string_comparisons += "\t\tauto paramReader = getReader<{}>(paramBuf);\n".format(create_capnp_signal_param_type_str(service_name, signal_name))
+                        string_comparisons += "\t\t::capnp::FlatArrayMessageReader msgReader(asCapnpArr(paramBuf));\n"
+                        string_comparisons += "\t\tauto paramReader = msgReader.getRoot<{}>();\n".format(create_capnp_signal_param_type_str(service_name, signal_name))
                         cb_call_params = ""
                         for param_name, param_type in param_info.items():
                             cpp_rpc_if_type = map_2_ca_call_param_type(param_type)

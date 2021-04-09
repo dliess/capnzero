@@ -21,13 +21,6 @@ kj::ArrayPtr<const capnp::word> asCapnpArr(MsgBuf&& msgBuf)
 			msgBuf.size() / sizeof(capnp::word));
 }
 
-template<typename T, typename MsgBuf>
-typename T::Reader getReader(MsgBuf& msgBuf)
-{
-	::capnp::FlatArrayMessageReader msgReader(asCapnpArr(msgBuf));
-	return msgReader.getRoot<T>();
-}
-
 inline
 void sendOverZmq(::capnp::MessageBuilder& message,
                   zmq::socket_t& zmqSocket,
