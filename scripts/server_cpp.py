@@ -194,6 +194,19 @@ void {0}Server::processNextRequest(WaitMode waitMode) {{
 {1}
     }}
 }}
+
+void {0}Server::processNextRequestAllNonBlock() {{
+    while(m_zmqRepSocket.get(zmq::sockopt::events) & ZMQ_POLLIN)
+    {{
+        processNextRequest(WaitMode::Blocking);
+    }}
+}}
+
+int {0}Server::getFd() const
+{{
+    return m_zmqRepSocket.get(zmq::sockopt::fd);
+}}
+
 """.format(file_we, cases_str)
 
     outStr += signal_constructor_definitions

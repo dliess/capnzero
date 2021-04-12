@@ -102,6 +102,12 @@ def create_rpc_id_enum(service_name):
     else:
         return service_name + "RpcIds"
 
+def create_property_var_name(service_name, var_name):
+    if service_name == "_":
+        return var_name
+    else:
+        return service_name + "__" + var_name
+
 def create_fn_parameter_str_from_dict(fn_info, converter_fn = None):
     param_type = rpc_param_type(fn_info)
     if param_type == RPCType.Void:
@@ -283,10 +289,15 @@ def map_type_to_qt_type(capnz_type):
         return "qreal"
     elif capnz_type == "Float64":
         return "qreal"
+# This would be the case for a Qt Webchannel interface
+#    elif re_data.match(capnz_type):
+#        return "QString" # 64 encoding
+#    elif capnz_type == "Span":
+#        return "QString" # 64 encoding
     elif re_data.match(capnz_type):
-        return "QString" # 64 encoding
+        return "QByteArray"
     elif capnz_type == "Span":
-        return "QString" # 64 encoding
+        return "QByteArray"
     elif capnz_type == "Text":
         return "QString"
     else:
@@ -303,7 +314,18 @@ def create_rpc_return_type_for_qt_webchannel_obj(rpc_info):
         return "QString"
     elif ret_type == RPCType.DirectType:
         return map_type_to_qt_type(rpc_info["returns"])
-   
+
+def create_rpc_return_type_for_qt_obj(rpc_info):
+    ret_type = rpc_return_type(rpc_info)
+    if ret_type == RPCType.Void:
+        return "void"
+    elif ret_type == RPCType.Dict:
+        return "QString"
+    elif ret_type == RPCType.CapnpNative:
+        return "QString"
+    elif ret_type == RPCType.DirectType:
+        return map_type_to_qt_type(rpc_info["returns"])
+
 def create_signal_fn_declarations(data, tabs, converter_fn = None):
     signal_fn_declarations = ""
     for service_name in data["services"]:
@@ -312,3 +334,15 @@ def create_signal_fn_declarations(data, tabs, converter_fn = None):
                 signal_info = data["services"][service_name]["signal"][signal_name]
                 signal_fn_declarations += tabs + "void {}({});\n".format(create_signal_method_name(service_name, signal_name), create_fn_input_parameter_str_sender(signal_info, converter_fn))
     return signal_fn_declarations
+
+def has_signals(data):
+    for service_name in data["services"]:
+        if "signal" in data["services"][service_name]:
+            return True
+    return False
+
+def has_rpc(data):
+    for service_name in data["services"]:
+        if "rpc" in data["services"][service_name]:
+            return True
+    return False

@@ -10,7 +10,5 @@ add_library(${TargetBaseName}-schema STATIC ${gen_cpp_sources} ${gen_cpp_headers
 target_include_directories(${TargetBaseName}-schema PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(${TargetBaseName}-schema
-    PRIVATE cppzmq
-    PRIVATE CapnProto::capnp-rpc
     PUBLIC capnzero
 )

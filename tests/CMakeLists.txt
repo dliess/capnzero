@@ -1,4 +1,4 @@
 add_subdirectory(Calculator)
-#add_subdirectory(CalculatorQt)
+add_subdirectory(TemperatureQt)
 add_subdirectory(RPCOnly)
 add_subdirectory(SignalsOnly)

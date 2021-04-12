@@ -42,7 +42,9 @@ def create_capnzero_server_file_h_content_str(data, file_we):
         Blocking,
         NonBlocking
     };
-    void processNextRequest(WaitMode waitMode = WaitMode::Blocking);      
+    void processNextRequest(WaitMode waitMode = WaitMode::Blocking);
+    void processNextRequestAllNonBlock();
+  	int getFd() const;
 """
 
     public_signals_part = ""

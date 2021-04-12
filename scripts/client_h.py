@@ -95,6 +95,9 @@ class {0}ClientSignals
 public:
     {0}ClientSignals(zmq::context_t& rZmqContext, const std::string& serverRpcAddr);
 	void handleIncomingSignal();
+	void handleIncomingSignalAllNonBlock();
+ 	int getFd() const;
+
 {1}
 private:
     zmq::socket_t m_zmqSubSocket;

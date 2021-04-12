@@ -8,6 +8,11 @@
              },
        },
     "runArgs" : [ "--rm", "--privileged" ],
+    "mounts" : [
+      "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+      "source=${localEnv:HOME}/.Xauthority,target=/home/build-user/.Xauthority,type=bind,consistency=cached"
+    ],
+    "containerEnv": {"DISPLAY": "${localEnv:DISPLAY}"},
     "settings": { 
        "terminal.integrated.shell.linux": "/bin/zsh"
     },
@@ -21,8 +26,9 @@
        "zxh404.vscode-proto3",
        "xaver.clang-format",
        "tomiturtiainen.rf-intellisense",
-       "derivitec-ltd.cmake-test-adapter",
        "be5invis.toml",
-       "abronan.capnproto-syntax"
+       "abronan.capnproto-syntax",
+       "fredericbonnet.cmake-test-adapter",
+       "davehart.quick-run-panel"
     ]
  }

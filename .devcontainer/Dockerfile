@@ -47,6 +47,12 @@ RUN apt-get update && apt-get install -y \
     qtdeclarative5-dev \
     libqt5websockets5-dev \
     libqt5webchannel5-dev \
+    qml-module-qtquick-layouts \
+    qml-module-qtquick-controls \
+    qml-module-qtquick-controls2 \
+    qml-module-qtquick-dialogs \
+    qml-module-qtquick-shapes \
+    qml-module-qt-websockets \
     && rm -rf /var/lib/apt/lists/*
 
 # Create group and user

@@ -1,0 +1,5 @@
+# parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
+[services]
+    [services._.properties]
+        actualTemperature = { type = 'Float32', access = "read-only" }
+        commandedTemperature = 'Float32'

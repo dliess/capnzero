@@ -78,6 +78,11 @@ using namespace capnzero::{0};
     m_zmqSubSocket.connect(serverSignalAddr);
 }}
 
+int {0}ClientSignals::getFd() const
+{{
+    return m_zmqSubSocket.get(zmq::sockopt::fd);
+}}
+
 {0}ClientSignalsThreaded::{0}ClientSignalsThreaded(zmq::context_t& rZmqContext, std::string serverSignalAddr):
     m_rZmqContext(rZmqContext),
     m_zmqSubHelperSocket(rZmqContext, zmq::socket_type::pair),
@@ -108,7 +113,7 @@ void {0}ClientSignalsThreaded::StartThread()
             for rpc_name in data["services"][service_name]["rpc"]:
                 rpc_info = data["services"][service_name]["rpc"][rpc_name]
                 if not should_be_template(rpc_info):
-                    outStr += create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we)
+                    outStr += create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, class_namespace = "{}ClientRpc".format(file_we))
 
     if has_signal_handling:
         outStr += """\
@@ -143,7 +148,16 @@ void {0}ClientSignals::handleIncomingSignal()
     auto res = m_zmqSubSocket.recv(keyBuf);
     if (!res) {{ throw std::runtime_error(\"No received msg\"); }}
     std::string_view key(static_cast<const char*>(keyBuf.data()), *res);
-{1}}}
+{1}
+}}
+
+void {0}ClientSignals::handleIncomingSignalAllNonBlock()
+{{
+    while(m_zmqSubSocket.get(zmq::sockopt::events) & ZMQ_POLLIN)
+    {{
+        handleIncomingSignal();
+    }}
+}}
 
 void {0}ClientSignalsThreaded::handleIncomingSignal(zmq::socket_t& zmqSubSocket)
 {{

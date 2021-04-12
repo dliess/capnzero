@@ -19,6 +19,26 @@ from rpc_interface_headers import *
 from qobject_client_h import *
 from qobject_client_cpp import *
 
+def expand_properties(data):
+    for service_name in data["services"]:
+        service = data["services"][service_name]
+        if "properties" in service:
+            for key, descr in service["properties"].items():
+                if not isinstance(descr, dict):
+                    propertyType = service["properties"][key]
+                    service["properties"][key] = { 'type' :  propertyType, 'access' : "read-write" }
+
+            for key, descr in service["properties"].items():
+                if not "signal" in service:
+                    service["signal"] = dict()
+                service["signal"].update( { "{}Changed".format(lowerfirst(key)) : { "parameter" : { 'val' : descr["type"] } } } )
+
+                if descr["access"] == "read-write":
+                    if not "rpc" in service:
+                        service["rpc"] = dict()
+                    service["rpc"].update( { "set{}".format(upperfirst(key)) : { "parameter" : { 'val' : descr["type"] } } } )
+
+
 outdir="undefined"
 descrfile="undefined"
 options, remainder = getopt.getopt(sys.argv[1:], ['o:d:'], ['outdir=', 'descrfile='])
@@ -53,6 +73,8 @@ global_types.init()
 # add keys if they don't exist
 if "enumerations" in data:
     global_types.enumerations = data["enumerations"]
+
+expand_properties(data)
 
 with open(capnp_file, 'w') as open_file:
     open_file.write(create_capnp_file_content_str(data, file_we))

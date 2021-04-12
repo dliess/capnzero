@@ -34,6 +34,11 @@ function(capnzero_generate_cpp)
     set(_GEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
   endif()
 
+  GET_TARGET_PROPERTY(GENERATOR_SCRIPT_PATH CAPNZERO::capnzero GENERATOR_SCRIPT_PATH)
+  if(NOT EXISTS ${GENERATOR_SCRIPT_PATH})
+    message(SEND_ERROR "property GENERATOR_SCRIPT_PATH is not set")
+  endif()
+
   get_filename_component(FIL_WLE ${ARG_IDL_FILE} NAME_WLE) # File name without directory and last extension
   get_filename_component(GENERATOR_SCRIPT_DIR ${GENERATOR_SCRIPT_PATH} DIRECTORY)
 
