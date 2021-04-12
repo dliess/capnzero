@@ -23,12 +23,15 @@ def create_signal_registration_method_name(service_name, signal_name):
     else:
         return "on{}{}".format(upperfirst(service_name), upperfirst(signal_name))
 
-def create_return_type_str_client(rpc_info, service_name, rpc_name, class_namespace = None):
+def create_return_type_str_client(rpc_info, service_name, rpc_name, class_namespace = None, type_mapper_fn = None):
     return_type = rpc_return_type(rpc_info)
     if return_type == RPCType.Void or return_type == RPCType.CapnpNative:
         return "void"
     elif return_type == RPCType.DirectType:
-        return rpc_info["returns"]
+        if type_mapper_fn:
+            return type_mapper_fn(rpc_info["returns"])
+        else:
+            return rpc_info["returns"]
     else:
         if class_namespace:
             return "{}::{}".format(class_namespace, "Return" + service_name +  upperfirst(rpc_name))

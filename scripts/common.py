@@ -303,7 +303,18 @@ def create_rpc_return_type_for_qt_webchannel_obj(rpc_info):
         return "QString"
     elif ret_type == RPCType.DirectType:
         return map_type_to_qt_type(rpc_info["returns"])
-   
+
+def create_rpc_return_type_for_qt_obj(rpc_info):
+    ret_type = rpc_return_type(rpc_info)
+    if ret_type == RPCType.Void:
+        return "void"
+    elif ret_type == RPCType.Dict:
+        return "QString"
+    elif ret_type == RPCType.CapnpNative:
+        return "QString"
+    elif ret_type == RPCType.DirectType:
+        return map_type_to_qt_type(rpc_info["returns"])
+
 def create_signal_fn_declarations(data, tabs, converter_fn = None):
     signal_fn_declarations = ""
     for service_name in data["services"]:
@@ -312,3 +323,15 @@ def create_signal_fn_declarations(data, tabs, converter_fn = None):
                 signal_info = data["services"][service_name]["signal"][signal_name]
                 signal_fn_declarations += tabs + "void {}({});\n".format(create_signal_method_name(service_name, signal_name), create_fn_input_parameter_str_sender(signal_info, converter_fn))
     return signal_fn_declarations
+
+def has_signals(data):
+    for service_name in data["services"]:
+        if "signal" in data["services"][service_name]:
+            return True
+    return False
+
+def has_rpc(data):
+    for service_name in data["services"]:
+        if "rpc" in data["services"][service_name]:
+            return True
+    return False
