@@ -30,6 +30,7 @@ def create_capnzero_client_transport_file_h_content_str(data, file_we):
 #define {0}_CLIENT_TRANSPORT_H
 
 #include <zmq.hpp>
+#include <capnp/message.h>
 
 namespace capnzero::{1}
 {{

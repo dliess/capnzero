@@ -38,13 +38,18 @@ def create_return_type_str_client(rpc_info, service_name, rpc_name, class_namesp
         else:
             return "{}".format("Return" + service_name +  upperfirst(rpc_name))
 
-def create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namespace, indent = ""):
+def create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namespace, indent = "", type_converter_fn = None):
     ret_str = ""
-    return_type_str = create_return_type_str_client(rpc_info, service_name, rpc_name, class_namespace)
+    #TODO: this is a dirty hack:
+    if type_converter_fn == map_type_to_qt_type:
+        the_class_namespace = ""
+    else:
+        the_class_namespace = class_namespace
+    return_type_str = create_return_type_str_client(rpc_info, service_name, rpc_name, the_class_namespace, type_mapper_fn = type_converter_fn)
 
     method_name = public_method_name(service_name, rpc_name)
 
-    parameter_str = create_fn_input_parameter_str_sender(rpc_info)
+    parameter_str = create_fn_input_parameter_str_sender(rpc_info, converter_fn = type_converter_fn)
     return_type = rpc_return_type(rpc_info)
     if return_type == RPCType.CapnpNative:
         if parameter_str != "":
@@ -58,8 +63,8 @@ def create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namesp
         ret_str += indent + "{0}{2}({3})".format(add_whitespace(return_type_str, 10), method_name, parameter_str)
     return ret_str
 
-def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we):
-    method_head = create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namespace = "{}ClientRpc".format(file_we))
+def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, class_namespace, type_converter_fn = None):
+    method_head = create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namespace, type_converter_fn = type_converter_fn)
     param_type = rpc_param_type(rpc_info)
     return_type = rpc_return_type(rpc_info)
 
@@ -69,9 +74,15 @@ def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we):
         req_msg_builder += "\tauto paramBuilder = message.initRoot<{0}>();\n".format(create_capnp_rpc_parameter_type_str(service_name, rpc_name))
         for param_name, p_type in rpc_info["parameter"].items():
             if(map_descr_type_to_capnp_type(p_type) == 'Data'):
-                req_msg_builder += "\tparamBuilder.set{0}(capnp::Data::Reader({1}.data(), {1}.size()));\n".format(upperfirst(param_name), param_name)
+                if type_converter_fn and type_converter_fn(p_type) == "QByteArray":
+                    req_msg_builder += "\tparamBuilder.set{0}(capnp::Data::Reader(reinterpret_cast<const ::capnp::byte*>({1}.data()), {1}.size()));\n".format(upperfirst(param_name), param_name)
+                else:
+                    req_msg_builder += "\tparamBuilder.set{0}(capnp::Data::Reader({1}.data(), {1}.size()));\n".format(upperfirst(param_name), param_name)
             else:
-                req_msg_builder += "\tparamBuilder.set{0}({1});\n".format(upperfirst(param_name), param_name)
+                if type_converter_fn and type_converter_fn(p_type) == "QString":
+                    req_msg_builder += "\tparamBuilder.set{0}({1}.toUtf8().constData());\n".format(upperfirst(param_name), param_name)
+                else:
+                    req_msg_builder += "\tparamBuilder.set{0}({1});\n".format(upperfirst(param_name), param_name)
         
     param1 = ""
     if param_type == RPCType.Void:
@@ -93,7 +104,10 @@ def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we):
                 lambda_content += "\t\t\tassert(src.size() == retVal.{}.size());\n".format(member_name)
                 lambda_content += "\t\t\tstd::copy(src.begin(), src.end(), retVal.{}.begin());\n".format(member_name)
             else:
-                lambda_content += "\t\t\tretVal.{0} = reader.get{1}();\n".format(member_name, upperfirst(member_name))
+                if type_converter_fn and type_converter_fn(member_type) == "QString":
+                    lambda_content += "\t\t\tretVal.{0} = reader.get{1}().cStr();\n".format(member_name, upperfirst(member_name))
+                else:
+                    lambda_content += "\t\t\tretVal.{0} = reader.get{1}();\n".format(member_name, upperfirst(member_name))
         param2 += "\t\t[&retVal](capnp::MessageReader& message){{\n\t\t{0}\n\t}}".format(lambda_content)
     elif return_type == RPCType.CapnpNative:
         param2 += "\t\tcb"
@@ -107,7 +121,10 @@ def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we):
             lambda_content += "\t\t\tassert(src.size() == retVal.{}.size());\n".format(member_name)
             lambda_content += "\t\t\tstd::copy(src.begin(), src.end(), retVal.{}.begin());\n".format(member_name)
         else:
-            lambda_content += "\t\t\tretVal = reader.get{0}();\n".format(upperfirst(member_name))
+            if type_converter_fn and type_converter_fn(member_type) == "QString":
+                lambda_content += "\t\t\tretVal = reader.get{0}().cStr();\n".format(upperfirst(member_name))
+            else:
+                lambda_content += "\t\t\tretVal = reader.get{0}();\n".format(upperfirst(member_name))
         param2 += "\t\t[&retVal](capnp::MessageReader& message){{\n\t\t{0}\n\t}}".format(lambda_content)
 
     if param1 != "" and param2 != "":
@@ -116,7 +133,7 @@ def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we):
     return_var = ""
     return_retval = ""
     if return_type != RPCType.Void and return_type != RPCType.CapnpNative:
-        return_var += "\t" + create_return_type_str_client(rpc_info, service_name, rpc_name) + " retVal;\n"
+        return_var += "\t" + create_return_type_str_client(rpc_info, service_name, rpc_name, type_mapper_fn = type_converter_fn) + " retVal;\n"
         return_retval += "\treturn retVal;"
 
     method_name = public_method_name(service_name, rpc_name)
@@ -134,3 +151,6 @@ def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we):
 }}
 
 """.format(method_head, req_msg_builder, return_var, method_name, param1, param2, return_retval)
+
+def is_valid_for_qt_rpc_client(rpc_info):
+    return rpc_param_type(rpc_info) != RPCType.CapnpNative and rpc_return_type(rpc_info) != RPCType.CapnpNative

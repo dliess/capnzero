@@ -108,7 +108,7 @@ void {0}ClientSignalsThreaded::StartThread()
             for rpc_name in data["services"][service_name]["rpc"]:
                 rpc_info = data["services"][service_name]["rpc"][rpc_name]
                 if not should_be_template(rpc_info):
-                    outStr += create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we)
+                    outStr += create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, class_namespace = "{}ClientRpc".format(file_we))
 
     if has_signal_handling:
         outStr += """\

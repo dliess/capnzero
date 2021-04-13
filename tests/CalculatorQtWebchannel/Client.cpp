@@ -2,6 +2,10 @@
 #include <iostream>
 #include <chrono>
 #include <QCoreApplication>
+#include <QWebChannel>
+#include <QWebSocketServer>
+#include <WebSocketClientWrapper.h>
+#include <WebSocketTransport.h>
 
 int main(int argc, char* argv[])
 {

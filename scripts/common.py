@@ -283,10 +283,15 @@ def map_type_to_qt_type(capnz_type):
         return "qreal"
     elif capnz_type == "Float64":
         return "qreal"
+# This would be the case for a Qt Webchannel interface
+#    elif re_data.match(capnz_type):
+#        return "QString" # 64 encoding
+#    elif capnz_type == "Span":
+#        return "QString" # 64 encoding
     elif re_data.match(capnz_type):
-        return "QString" # 64 encoding
+        return "QByteArray"
     elif capnz_type == "Span":
-        return "QString" # 64 encoding
+        return "QByteArray"
     elif capnz_type == "Text":
         return "QString"
     else:

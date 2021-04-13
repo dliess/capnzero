@@ -85,7 +85,10 @@ def create_capnzero_client_transport_file_inl_content_str(data, file_we):
     return """
 #include <capnp/message.h>
 #include <capnp/serialize.h>
+#include "{0}.capnp.h"
 #include "capnzero_utils.h"
+
+
 namespace capnzero::{0}
 {{
 
