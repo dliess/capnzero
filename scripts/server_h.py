@@ -1,6 +1,14 @@
 import global_types
 from common import *
 
+def create_subscr_cb_reg_method_declarations(data):
+    ret = ""
+    for service_name in data["services"]:
+        if "signal" in data["services"][service_name]:
+            for signal_name in data["services"][service_name]["signal"]:
+                signal_info = data["services"][service_name]["signal"][signal_name]
+                ret += "\t\t\tvoid register{}(SubscriptionCb cb);\n".format(create_signal_subscription_cb_type(service_name, signal_name))
+    return ret
 
 def create_capnzero_server_file_h_content_str(data, file_we):
     has_rpc = False
@@ -54,12 +62,17 @@ def create_capnzero_server_file_h_content_str(data, file_we):
     {{
     public:
         Signals(zmq::context_t& rZmqContext, const std::string& signalBindAddr);
+        int getFd() const;
+        void handleAllSubscriptions();
 {0}
+        using SubscriptionCb = std::function<void(Signals&)>;
+{1}
     private:
         zmq::socket_t m_rZmqPubSocket;
+        std::unordered_map<std::string, SubscriptionCb> m_subscrCbMap;
     }};
     Signals &signals() {{ return m_signals; }}
-""".format(signal_fn_declarations)
+""".format(signal_fn_declarations, create_subscr_cb_reg_method_declarations(data))
 
 
     private_rpc_part = ""
@@ -77,6 +90,8 @@ def create_capnzero_server_file_h_content_str(data, file_we):
 #include <zmq.hpp>
 #include <thread>
 #include <memory>
+#include <functional>
+#include <unordered_map>
 #include "capnzero_typedefs.h"
 
 {1}

@@ -64,6 +64,16 @@ int main()
     fdSet.AddFd(server.getFd(), [&server](int fd){
         server.processNextRequestAllNonBlock();
     });
+    fdSet.AddFd(server.signals().getFd(), [&server](int fd){
+        server.signals().handleAllSubscriptions();
+    });
+
+    server.signals().registerActualTemperatureChangedSubscrCb([&actualTemperatureTmp](TemperatureQtServer::Signals& signals){
+        signals.actualTemperatureChanged(actualTemperatureTmp);
+    });
+    server.signals().registerCommandedTemperatureChangedSubscrCb([&commandedTemperature](TemperatureQtServer::Signals& signals){
+        signals.commandedTemperatureChanged(commandedTemperature);
+    });
 
     while(true)
     {

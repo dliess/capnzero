@@ -261,8 +261,17 @@ def create_signal_cb_type(service_name, signal_name):
     else:
         return "{}{}Cb".format(upperfirst(service_name), upperfirst(signal_name))
 
+def create_signal_subscription_cb_type(service_name, signal_name):
+    if service_name == "_":
+        return "{}SubscrCb".format(upperfirst(signal_name))
+    else:
+        return "{}{}SubscrCb".format(upperfirst(service_name), upperfirst(signal_name))
+
 def create_signal_cb_member(service_name, signal_name):
     return "m_{}".format(lowerfirst(create_signal_cb_type(service_name, signal_name)))
+
+def create_signal_subscription_cb_member(service_name, signal_name):
+    return "m_{}".format(lowerfirst(create_signal_subscription_cb_type(service_name, signal_name)))
 
 def map_type_to_qt_type(capnz_type):
     re_data = re.compile(r'Data<(\d+)>')

@@ -41,6 +41,8 @@ RUN apt-get update && apt-get install -y \
     python3-toml \
     && rm -rf /var/lib/apt/lists/*
 
+RUN rm /usr/include/zmq.hpp
+
 # install Qt build common dependencies
 RUN apt-get update && apt-get install -y \
     qtbase5-dev \

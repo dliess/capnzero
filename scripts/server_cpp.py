@@ -1,6 +1,36 @@
 import global_types
 from common import *
 
+def create_subscr_cb_reg_method_definitions(file_we, data):
+    ret = ""
+    for service_name in data["services"]:
+        if "signal" in data["services"][service_name]:
+            for signal_name in data["services"][service_name]["signal"]:
+                signal_info = data["services"][service_name]["signal"][signal_name]
+                ret += """\
+void {0}Server::Signals::register{1}(SubscriptionCb cb)
+{{
+    m_subscrCbMap["{2}"] = cb;
+}}
+""".format(file_we, \
+           create_signal_subscription_cb_type(service_name, signal_name), \
+           create_signal_key_name(service_name, signal_name))
+    return ret
+
+
+#def create_subscription_dispatching(data):
+#    ret = ""
+#    for service_name in data["services"]:
+#        if "signal" in data["services"][service_name]:
+#            for signal_name in data["services"][service_name]["signal"]:
+#                signal_info = data["services"][service_name]["signal"][signal_name]
+#                ret += "\t\t\t{}(key == \"{}\"){{\n".format("if" if (ret == "") else "else if", \
+#                                                        create_signal_key_name(service_name, signal_name))
+#                ret += "\t\t\t\tif({0}) {0}();\n".format(create_signal_subscription_cb_member(service_name, signal_name))
+#                ret += "\t\t\t}\n"
+#    return ret
+
+
 def create_capnzero_server_file_cpp_content_str(data, file_we):
     has_rpc = False
     has_signal_handling = False
@@ -157,11 +187,40 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
     if has_signal_handling:
         signal_constructor_definitions = """\
 {0}Server::Signals::Signals(zmq::context_t& rZmqContext, const std::string& signalBindAddr) :
-    m_rZmqPubSocket(rZmqContext, zmq::socket_type::pub)
+    m_rZmqPubSocket(rZmqContext, zmq::socket_type::xpub)
 {{
     m_rZmqPubSocket.bind(signalBindAddr);
+    m_rZmqPubSocket.set(zmq::sockopt::xpub_verbose, true);
 }}
-""".format(file_we)
+
+int {0}Server::Signals::getFd() const
+{{
+    return m_rZmqPubSocket.get(zmq::sockopt::fd);
+}}
+
+void {0}Server::Signals::handleAllSubscriptions()
+{{
+    while(m_rZmqPubSocket.get(zmq::sockopt::events) & ZMQ_POLLIN)
+	{{
+		zmq::message_t msg;
+		auto res = m_rZmqPubSocket.recv(msg, zmq::recv_flags::none);
+		bool subscribe = static_cast<const char*>(msg.data())[0];
+		std::string key(&(static_cast<const char*>(msg.data())[1]), msg.size() - 1);
+		if(subscribe)
+		{{
+            auto it = m_subscrCbMap.find(key);
+            if(it != m_subscrCbMap.end())
+            {{
+                (it->second)(*this);
+            }}
+		}}
+	}}
+}}
+
+{1}
+
+""".format(file_we, \
+           create_subscr_cb_reg_method_definitions(file_we, data))
 
 
 
