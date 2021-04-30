@@ -11,10 +11,18 @@ Item {
         color: "white"
     }
 
+    Text {
+        x: 70
+        y: 5
+        font.family: "Helvetica"
+        font.pointSize: 17
+        text: backend.sensorName
+    }
+
     Slider {
         id: slider1
         x: 37
-        y: 5
+        y: 25
         value: 0.8
         Binding {
             target: backend
@@ -25,7 +33,7 @@ Item {
 
     ValueBar {
         x: 37
-        y: 55
+        y: 75
         width: 200
         height: 30
         actualValue : backend.actualTemperature

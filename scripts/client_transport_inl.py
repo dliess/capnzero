@@ -33,7 +33,7 @@ void {0}ClientRpcTransport::_{1}(capnp::MessageBuilder& sndData, Callable&& rcvC
     {{
         throw std::runtime_error("recv failed, nothing received");
     }}
-    ::capnp::FlatArrayMessageReader readMessage(
+    ::capnp::UnalignedFlatArrayMessageReader readMessage(
 	    kj::ArrayPtr<const capnp::word>(reinterpret_cast<const capnp::word*>(revcMsg.data()), revcMsg.size() / sizeof(capnp::word) )
 	);
     rcvCb(readMessage);
@@ -63,7 +63,7 @@ void {0}ClientRpcTransport::_{1}(Callable &&rcvCb)
     {{
         throw std::runtime_error("recv failed, nothing received");
     }}
-    ::capnp::FlatArrayMessageReader readMessage(
+    ::capnp::UnalignedFlatArrayMessageReader readMessage(
 	    kj::ArrayPtr<const capnp::word>(reinterpret_cast<const capnp::word*>(revcMsg.data()), revcMsg.size() / sizeof(capnp::word) )
 	);
     rcvCb(readMessage);

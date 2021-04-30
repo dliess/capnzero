@@ -68,6 +68,9 @@ int main()
         server.signals().handleAllSubscriptions();
     });
 
+    server.signals().registerSensorNameChangedSubscrCb([](TemperatureQtServer::Signals& signals){
+        signals.sensorNameChanged("Living-Room");
+    });
     server.signals().registerActualTemperatureChangedSubscrCb([&actualTemperatureTmp](TemperatureQtServer::Signals& signals){
         signals.actualTemperatureChanged(actualTemperatureTmp);
     });
