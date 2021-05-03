@@ -163,3 +163,15 @@ def has_property(data, property_name):
                 if property_name == key:
                     return True
     return False
+
+def create_qproperty_setter_method_name(service_name, key):
+    if service_name == "_":
+        return "set{}".format(upperfirst(key))
+    else:
+        return "{}__set{}".format(service_name, upperfirst(key)) 
+
+def create_qproperty_notification_signal_name(service_name, key):
+    if service_name == "_":
+        return "{}Changed".format(key)
+    else:
+        return "{}__{}Changed".format(service_name, key) 

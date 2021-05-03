@@ -44,12 +44,11 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
     constructor_initializer_list = ""
     for service_name in data["services"]:
         if "rpc" in data["services"][service_name]:
-            constructor_parameters += "std::unique_ptr<{}> {}".format(create_member_cb_if_type(service_name), \
+            constructor_parameters += ", std::unique_ptr<{}> {}".format(create_member_cb_if_type(service_name), \
                                                                 create_var_name_from_service(service_name))
             constructor_initializer_list += "\t{}(std::move({})),".format(create_member_cb_if(service_name), create_var_name_from_service(service_name))
 
             if list(data["services"].keys())[-1] != service_name:
-                constructor_parameters += ", "
                 constructor_initializer_list += "\n"
 
     cases_str = ""
@@ -158,7 +157,7 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
     server_constructor_definition = ""
     if has_rpc and has_signal_handling:
         server_constructor_definition = """\
-{0}Server::{0}Server(zmq::context_t& rZmqContext, const std::string& rpcBindAddr, const std::string& signalBindAddr, {1}) :
+{0}Server::{0}Server(zmq::context_t& rZmqContext, const std::string& rpcBindAddr, const std::string& signalBindAddr {1}) :
 {2}
     m_zmqRepSocket(rZmqContext, zmq::socket_type::router),
     m_signals(rZmqContext, signalBindAddr)
@@ -168,7 +167,7 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
 """.format(file_we, constructor_parameters, constructor_initializer_list)
     elif has_rpc:
         server_constructor_definition = """\
-{0}Server::{0}Server(zmq::context_t& rZmqContext, const std::string& rpcBindAddr, {1}) :
+{0}Server::{0}Server(zmq::context_t& rZmqContext, const std::string& rpcBindAddr {1}) :
 {2}
     m_zmqRepSocket(rZmqContext, zmq::socket_type::router)
 {{

@@ -122,10 +122,12 @@ def create_qproperty_declarations(data):
         if "properties" in service:
             for key, descr in service["properties"].items():
                 propName = create_property_var_name(service_name, key)
+                property_setter_name = create_qproperty_setter_method_name(service_name, key)
+                property_notification_signal_name = create_qproperty_notification_signal_name(service_name, key)
                 if descr["access"] == "read-only":
-                    ret += "\tQ_PROPERTY({0} {1} READ {2} NOTIFY {3}Changed)\n".format(map_type_to_qt_type(descr["type"]), propName, propName, propName )
+                    ret += "\tQ_PROPERTY({0} {1} READ {2} NOTIFY {3})\n".format(map_type_to_qt_type(descr["type"]), propName, propName, property_notification_signal_name )
                 else:
-                    ret += "\tQ_PROPERTY({0} {1} READ {2} WRITE set{3} NOTIFY {4}Changed)\n".format(map_type_to_qt_type(descr["type"]), propName, propName, upperfirst(propName), propName )
+                    ret += "\tQ_PROPERTY({0} {1} READ {2} WRITE {3} NOTIFY {4})\n".format(map_type_to_qt_type(descr["type"]), propName, propName, property_setter_name, property_notification_signal_name )
     return ret
 
 def create_qclient_invokable_declarations(data):

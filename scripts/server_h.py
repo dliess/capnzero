@@ -25,10 +25,8 @@ def create_capnzero_server_file_h_content_str(data, file_we):
     for service_name in data["services"]:
         if "rpc" in data["services"][service_name]:
             cbif_includes += "#include \"{}{}.h\"\n".format(file_we, create_member_cb_if_type(service_name))
-            constructor_parameters += "std::unique_ptr<{}> {}".format(create_member_cb_if_type(service_name), \
+            constructor_parameters += ", std::unique_ptr<{}> {}".format(create_member_cb_if_type(service_name), \
                                                                       create_var_name_from_service(service_name))
-            if list(data["services"].keys())[-1] != service_name:
-                constructor_parameters += ", "
             cbif_members += "\tstd::unique_ptr<{}> {};\n".format(create_member_cb_if_type(service_name), \
                                                                 create_member_cb_if(service_name))
 
@@ -36,9 +34,9 @@ def create_capnzero_server_file_h_content_str(data, file_we):
 
     constructor_decl = ""
     if has_rpc and has_signal_handling:
-        constructor_decl = "\t{}Server(zmq::context_t& rZmqContext, const std::string& rpcBindAddr, const std::string& signalBindAddr, {});".format(file_we, constructor_parameters)
+        constructor_decl = "\t{}Server(zmq::context_t& rZmqContext, const std::string& rpcBindAddr, const std::string& signalBindAddr {});".format(file_we, constructor_parameters)
     elif has_rpc:
-        constructor_decl = "\t{}Server(zmq::context_t& rZmqContext, const std::string& rpcBindAddr, {});".format(file_we, constructor_parameters)
+        constructor_decl = "\t{}Server(zmq::context_t& rZmqContext, const std::string& rpcBindAddr {});".format(file_we, constructor_parameters)
     elif has_signal_handling:
         constructor_decl = "\t{}Server(zmq::context_t& rZmqContext, const std::string& signalBindAddr);".format(file_we)
 

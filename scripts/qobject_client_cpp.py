@@ -66,7 +66,9 @@ def create_qclient_signal_connections(data):
         if "signal" in data["services"][service_name]:
             for signal_name in data["services"][service_name]["signal"]:
                 signal_info = data["services"][service_name]["signal"][signal_name]
-                if has_property(data, signal_name.removesuffix("Changed")):
+                property_name = signal_name.removesuffix("Changed")
+                if has_property(data, property_name):
+                    property_name_with_prefix = create_property_var_name(service_name, property_name)
                     ret += """\
 \tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, [this]({1}){{
 \t\tif(m_{2} != val){{
@@ -76,7 +78,7 @@ def create_qclient_signal_connections(data):
 \t}});
 """.format(create_signal_method_name(service_name, signal_name), \
            create_fn_input_parameter_str_sender(signal_info, map_type_to_qt_type), \
-           signal_name.removesuffix("Changed"))
+           property_name_with_prefix)
                 else:
                     ret += "\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, this, &QClient::{0});\n".format(create_signal_method_name(service_name, signal_name))
     return ret
@@ -140,9 +142,10 @@ def create_qclient_invokable_definitions(data):
         service = data["services"][service_name]
         if "properties" in service:
             for key, descr in service["properties"].items():
-                ret += "{} QClient::{}() const\n".format(map_type_to_qt_type(descr["type"]), create_property_var_name(service_name, key))
+                property_name_with_prefix = create_property_var_name(service_name, key)
+                ret += "{} QClient::{}() const\n".format(map_type_to_qt_type(descr["type"]), property_name_with_prefix)
                 ret += "{\n"
-                ret += "\treturn m_{};\n".format(key)
+                ret += "\treturn m_{};\n".format(property_name_with_prefix)
                 ret += "}\n\n"
     return ret
 
