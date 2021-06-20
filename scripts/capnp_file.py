@@ -1,14 +1,17 @@
 import global_types
+import subprocess
 from common import *
 
 def create_capnp_file_content_str(data, file_we):
+    the_id = subprocess.check_output(['capnp', 'id']).decode('utf-8').rstrip()
+
     outStr = """\
-@0x9c9f9131bf231692;
+{};
 
 using Cxx = import "/capnp/c++.capnp";
 $Cxx.namespace("capnzero::{}");
 
-""".format(file_we)
+""".format(the_id, file_we)
 
     if "capnp-inline" in data:
         outStr += data["capnp-inline"]
