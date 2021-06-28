@@ -82,19 +82,34 @@ function(capnzero_generate_cpp)
     VERBATIM
   )
 
-  if(NOT TARGET CapnProto::capnp_tool)
-    message(SEND_ERROR "No capnp_tool TARGET")
+  if(NOT CAPNP_EXECUTABLE)
+    if(DEFINED ENV{CAPNP})
+      # capnp found at the yocto sdk
+      set(CAPNP_EXECUTABLE "$ENV{CAPNP}")
+    else()
+      find_program(CAPNP_EXECUTABLE "capnp")
+      if(CAPNP_EXECUTABLE-NOTFOUND)
+        message(SEND_ERROR "Could not locate capnp executable (CAPNP_EXECUTABLE).")
+      endif()
+    endif()
   endif()
-  if(NOT TARGET CapnProto::capnpc_cpp)
-    message(SEND_ERROR "No capnpc_cpp TARGET")
+  message(STATUS "Found capnp executable is ${CAPNP_EXECUTABLE}")
+
+  if (NOT CAPNPC_CXX_EXECUTABLE)
+    if(DEFINED ENV{CAPNPC_CXX})
+      # capnpc-c++ found at the yocto sdk
+      set(CAPNPC_CXX_EXECUTABLE "$ENV{CAPNPC_CXX}")
+    else()
+      # search in the same directory, where "capnp" was found
+      get_filename_component(capnp_dir "${CAPNP_EXECUTABLE}" DIRECTORY)
+      find_program(CAPNPC_CXX_EXECUTABLE "capnpc-c++" HINTS "${capnp_dir}")
+      if(CAPNPC_CXX_EXECUTABLE-NOTFOUND)
+        message(SEND_ERROR "Could not locate capnpc-c++ executable (CAPNPC_CXX_EXECUTABLE).")
+      endif()
+    endif()
   endif()
 
-
-  find_program(CAPNP_EXECUTABLE "capnp")
-  GET_TARGET_PROPERTY(CAPNPC_CXX_EXECUTABLE CapnProto::capnpc_cpp CAPNPC_CXX_EXECUTABLE)
-  if(NOT EXISTS ${CAPNPC_CXX_EXECUTABLE})
-    find_program(CAPNPC_CXX_EXECUTABLE "capnpc-c++")
-  endif()
+  message(STATUS "Found capnpc-c++ executable is ${CAPNPC_CXX_EXECUTABLE}")
 
   set(CAPNP_GENERATE_BASE_PATH "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WLE}.capnp")
   add_custom_command(
