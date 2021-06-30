@@ -104,9 +104,9 @@ def create_rpc_id_enum(service_name):
 
 def create_property_var_name(service_name, var_name):
     if service_name == "_":
-        return var_name
+        return lowerfirst(var_name)
     else:
-        return service_name + "__" + var_name
+        return lowerfirst(service_name) + "__" + var_name
 
 def create_fn_parameter_str_from_dict(fn_info, converter_fn = None):
     param_type = rpc_param_type(fn_info)

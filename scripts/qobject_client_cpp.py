@@ -56,7 +56,7 @@ def create_string_comparisons(data):
                     elif signal_info["parameter"] == "__capnp__native__":
                         string_comparisons += "\t\t::capnp::UnalignedFlatArrayMessageReader reader(asCapnpArr(paramBuf));\n"
                         cb_call_params += "reader"
-                string_comparisons += "\t\temit {0}({1});\n".format(create_signal_method_name(service_name, signal_name), cb_call_params)
+                string_comparisons += "\t\temit {0}({1});\n".format(create_signal_method_name_qt(service_name, signal_name), cb_call_params)
                 string_comparisons += "\t}\n"
     return string_comparisons
 
@@ -76,11 +76,11 @@ def create_qclient_signal_connections(data):
 \t\t\temit {0}();
 \t\t}}
 \t}});
-""".format(create_signal_method_name(service_name, signal_name), \
+""".format(create_signal_method_name_qt(service_name, signal_name), \
            create_fn_input_parameter_str_sender(signal_info, map_type_to_qt_type), \
            property_name_with_prefix)
                 else:
-                    ret += "\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, this, &QClient::{0});\n".format(create_signal_method_name(service_name, signal_name))
+                    ret += "\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, this, &QClient::{0});\n".format(create_signal_method_name_qt(service_name, signal_name))
     return ret
 
 def create_qclient_constructor_definition(data):
@@ -136,7 +136,7 @@ def create_qclient_invokable_definitions(data):
                             callParams += prm
                     ret += create_rpc_client_method_head(rpc_info, service_name, rpc_name, "QClient", type_converter_fn = map_type_to_qt_type) + "\n"
                     ret += "{\n"
-                    ret += "\t{}m_qclientRpc.{}({});\n".format("return " if ("returns" in rpc_info) else "", public_method_name(service_name, rpc_name), callParams)
+                    ret += "\t{}m_qclientRpc.{}({});\n".format("return " if ("returns" in rpc_info) else "", public_method_name_qt(service_name, rpc_name), callParams)
                     ret += "}\n\n"
     for service_name in data["services"]:
         service = data["services"][service_name]

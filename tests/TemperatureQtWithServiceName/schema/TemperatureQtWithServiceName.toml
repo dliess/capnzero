@@ -1,0 +1,9 @@
+# parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
+[services]
+    [services.TemperatureService.properties]
+        sensorName = { type = 'Text', access = "read-only" }
+        actualTemperature = { type = 'Float32', access = "read-only" }
+        commandedTemperature = 'Float32'
+
+    [services.TemperatureService.rpc.aTestRpc]
+        parameter = { title = 'Text'}

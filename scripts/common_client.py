@@ -14,6 +14,12 @@ def public_method_name(service_name, rpc_name):
     else:
         return service_name + "__" + rpc_name
 
+def public_method_name_qt(service_name, rpc_name):
+    if service_name == "_":
+        return rpc_name
+    else:
+        return lowerfirst(service_name) + "__" + rpc_name
+
 def protected_method_name(service_name, rpc_name):
     return "_" + public_method_name(service_name, rpc_name)
 
@@ -40,14 +46,15 @@ def create_return_type_str_client(rpc_info, service_name, rpc_name, class_namesp
 
 def create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namespace, indent = "", type_converter_fn = None):
     ret_str = ""
+    method_name = public_method_name(service_name, rpc_name)
     #TODO: this is a dirty hack:
     if type_converter_fn == map_type_to_qt_type:
         the_class_namespace = ""
+        method_name = lowerfirst(method_name)
     else:
         the_class_namespace = class_namespace
     return_type_str = create_return_type_str_client(rpc_info, service_name, rpc_name, the_class_namespace, type_mapper_fn = type_converter_fn)
 
-    method_name = public_method_name(service_name, rpc_name)
 
     parameter_str = create_fn_input_parameter_str_sender(rpc_info, converter_fn = type_converter_fn)
     return_type = rpc_return_type(rpc_info)
@@ -168,10 +175,33 @@ def create_qproperty_setter_method_name(service_name, key):
     if service_name == "_":
         return "set{}".format(upperfirst(key))
     else:
-        return "{}__set{}".format(service_name, upperfirst(key)) 
+        return "{}__set{}".format(lowerfirst(service_name), upperfirst(key)) 
 
 def create_qproperty_notification_signal_name(service_name, key):
     if service_name == "_":
-        return "{}Changed".format(key)
+        return "{}Changed".format(lowerfirst(key))
     else:
-        return "{}__{}Changed".format(service_name, key) 
+        return "{}__{}Changed".format(lowerfirst(service_name), key)
+
+def create_signal_method_name_qt(service_name, signal_name):
+    if service_name == "_":
+        return lowerfirst(signal_name)
+    else:
+        return lowerfirst(service_name) + "__" + signal_name
+
+
+def create_signal_fn_declarations_qt(data, tabs, converter_fn = None):
+    signal_fn_declarations = ""
+    for service_name in data["services"]:
+        if "signal" in data["services"][service_name]:
+            for signal_name in data["services"][service_name]["signal"]:
+                signal_info = data["services"][service_name]["signal"][signal_name]
+                signal_fn_declarations += tabs + "void {}({});\n".format(create_signal_method_name_qt(service_name, signal_name), create_fn_input_parameter_str_sender(signal_info, converter_fn))
+    return signal_fn_declarations
+
+def create_rpc_method_name_qt(service_name, rpc_name):
+    if service_name == "_":
+        return rpc_name
+    else:
+        return lowerfirst(service_name) + "__" + rpc_name
+

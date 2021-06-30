@@ -61,7 +61,7 @@ def create_rpc_declarations_for_qt_obj(data, tabs, prefix):
                 if is_valid_for_qt_rpc_client(rpc_info):
                     return_type_str = create_return_type_str_client(rpc_info, service_name, rpc_name, type_mapper_fn = map_type_to_qt_type)
                     parameter_str = create_fn_parameter_str_from_dict(rpc_info, map_type_to_qt_type)
-                    method_name = create_rpc_method_name(service_name, rpc_name)
+                    method_name = create_rpc_method_name_qt(service_name, rpc_name)
                     ret_str +=  tabs + prefix + " " + return_type_str
                     ret_str += " " if len(prefix + " " + return_type_str) < 40 else ("\n" + tabs)
                     ret_str += method_name + "(" + parameter_str + ");\n"
@@ -113,7 +113,7 @@ private:
 }};
 
 }} // namespace capnzero::{0}
-""".format(file_we, create_signal_fn_declarations(data, "\t", map_type_to_qt_type))
+""".format(file_we, create_signal_fn_declarations_qt(data, "\t", map_type_to_qt_type))
 
 def create_qproperty_declarations(data):
     ret = ""
@@ -146,9 +146,9 @@ def create_qclient_signal_fn_declarations(data, tabs, converter_fn = None):
             for signal_name in data["services"][service_name]["signal"]:
                 signal_info = data["services"][service_name]["signal"][signal_name]
                 if has_property(data, signal_name.removesuffix("Changed")):
-                    signal_fn_declarations += tabs + "void {}();\n".format(create_signal_method_name(service_name, signal_name))
+                    signal_fn_declarations += tabs + "void {}();\n".format(create_signal_method_name_qt(service_name, signal_name))
                 else:
-                    signal_fn_declarations += tabs + "void {}({});\n".format(create_signal_method_name(service_name, signal_name), create_fn_input_parameter_str_sender(signal_info, converter_fn))
+                    signal_fn_declarations += tabs + "void {}({});\n".format(create_signal_method_name_qt(service_name, signal_name), create_fn_input_parameter_str_sender(signal_info, converter_fn))
     return signal_fn_declarations
 
 def create_qobject_private_members(data):
