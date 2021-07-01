@@ -18,7 +18,7 @@ __Calculator.toml__ --> the file basename is used as service name and namespace 
         parameter = { a = 'Int32', b = 'Int32' }
         returns = { ret = 'Int32' }
 
-    [services._.batteryChargeChanged]
+    [services._.signal.batteryChargeChanged]
         parameter = { percentage = 'Float32' }
 ```
 <ins>**rpc-s**</ins> can have input **parameter** and **return** values. If one of them is void, you can simply ommit it.
