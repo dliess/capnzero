@@ -162,13 +162,11 @@ def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, 
 def is_valid_for_qt_rpc_client(rpc_info):
     return rpc_param_type(rpc_info) != RPCType.CapnpNative and rpc_return_type(rpc_info) != RPCType.CapnpNative
 
-def has_property(data, property_name):
-    for service_name in data["services"]:
-        service = data["services"][service_name]
-        if "properties" in service:
-            for key, descr in service["properties"].items():
-                if property_name == key:
-                    return True
+def has_property(service, property_name):
+    if "properties" in service:
+        for key, descr in service["properties"].items():
+            if property_name == key:
+                return True
     return False
 
 def create_qproperty_setter_method_name(service_name, key):

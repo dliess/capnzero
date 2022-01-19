@@ -145,7 +145,7 @@ def create_qclient_signal_fn_declarations(data, tabs, converter_fn = None):
         if "signal" in data["services"][service_name]:
             for signal_name in data["services"][service_name]["signal"]:
                 signal_info = data["services"][service_name]["signal"][signal_name]
-                if has_property(data, signal_name.removesuffix("Changed")):
+                if has_property(data["services"][service_name], signal_name.removesuffix("Changed")):
                     signal_fn_declarations += tabs + "void {}();\n".format(create_signal_method_name_qt(service_name, signal_name))
                 else:
                     signal_fn_declarations += tabs + "void {}({});\n".format(create_signal_method_name_qt(service_name, signal_name), create_fn_input_parameter_str_sender(signal_info, converter_fn))

@@ -67,7 +67,7 @@ def create_qclient_signal_connections(data):
             for signal_name in data["services"][service_name]["signal"]:
                 signal_info = data["services"][service_name]["signal"][signal_name]
                 property_name = signal_name.removesuffix("Changed")
-                if has_property(data, property_name):
+                if has_property(data["services"][service_name], property_name):
                     property_name_with_prefix = create_property_var_name(service_name, property_name)
                     ret += """\
 \tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, [this]({1}){{
