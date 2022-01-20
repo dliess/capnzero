@@ -4,3 +4,4 @@
         sensorName = { type = 'Text', access = "read-only" }
         actualTemperature = { type = 'Float32', access = "read-only" }
         commandedTemperature = 'Float32'
+        enabled = {type = 'Uint8', access = "read-write-toggle"}

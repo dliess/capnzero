@@ -33,10 +33,14 @@ def expand_properties(data):
                     service["signal"] = dict()
                 service["signal"].update( { "{}Changed".format(lowerfirst(key)) : { "parameter" : { 'val' : descr["type"] } } } )
 
-                if descr["access"] == "read-write":
+                if "-write" in descr["access"]:
                     if not "rpc" in service:
                         service["rpc"] = dict()
                     service["rpc"].update( { "set{}".format(upperfirst(key)) : { "parameter" : { 'val' : descr["type"] } } } )
+                if "-toggle" in descr["access"]:
+                    if not "rpc" in service:
+                        service["rpc"] = dict()
+                    service["rpc"].update( { "toggle{}".format(upperfirst(key)) : {} } )
 
 
 outdir="undefined"
