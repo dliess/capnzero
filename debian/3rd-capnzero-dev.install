@@ -1,0 +1,5 @@
+usr/include/capnzero/*.h
+usr/include/capnzero/*.hpp
+usr/lib/*/libcapnzero.a
+usr/lib/*/cmake/capnzero/*.cmake
+usr/share/capnzero/*.py

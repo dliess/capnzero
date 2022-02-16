@@ -1,0 +1,18 @@
+Source: capnzero
+Section: devel
+Priority: optional
+Maintainer: KDaniel Zicsi-Liess <liessdaniel415@gmail.com>
+Build-Depends:
+    debhelper (>= 12),
+    debhelper-compat (= 12),
+    cmake,
+    libcapnp-dev,
+    cppzmq-dev
+
+Package: capnzero-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: cppzmq-dev, libcapnp-dev, ${shlibs:Depends}, ${misc:Depends}
+Description: Library for serial connection.
+ The library can use to communicate with an serial device.
