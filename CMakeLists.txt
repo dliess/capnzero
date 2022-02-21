@@ -67,6 +67,7 @@ install(TARGETS ${TARGET_NAME} EXPORT ${TARGET_NAME}-targets
 
 install(
   FILES 
+    "include/capnzero_NativeCapnpMsgWriter.h"
     "include/capnzero_typedefs.h"
     "include/capnzero_utils.h"
     "include/error_msg.hpp"
