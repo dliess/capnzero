@@ -95,6 +95,9 @@ public:
 
 def create_signal_part(file_we, data):
     return """\
+#include <zmq.hpp>
+#include <capnp/message.h>
+
 namespace capnzero::{0}
 {{
 

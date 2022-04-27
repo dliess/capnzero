@@ -1,5 +1,6 @@
 add_subdirectory(Calculator)
 add_subdirectory(TemperatureQt)
 add_subdirectory(TemperatureQtWithServiceName)
+add_subdirectory(TemperatureQtSignalsOnly)
 add_subdirectory(RPCOnly)
 add_subdirectory(SignalsOnly)

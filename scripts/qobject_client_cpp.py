@@ -3,7 +3,16 @@ from common import *
 from common_client import *
 
 def create_all_client_definition_for_rpc(file_we, data):
-    client_definition_for_rpc = ""
+    if not has_rpc(data):
+        return ""
+    client_definition_for_rpc = """
+QClientRpc::QClientRpc(zmq::context_t& rZmqContext, const std::string& rpcAddr, QObject *pParent):
+    QObject(pParent),
+    {0}ClientRpcTransport(rZmqContext, rpcAddr)
+{{
+}}    
+        
+""".format(file_we)
     # define rpc-s
     for service_name in data["services"]:
         if "rpc" in data["services"][service_name]:
@@ -152,16 +161,13 @@ def create_qclient_invokable_definitions(data):
 def create_capnzero_qobject_client_file_cpp_content_str(data, file_we):
     return """\
 #include "{0}_QObjectClient.h"
+#include "{0}.capnp.h"
 #include <QSocketNotifier>
+#include <capnp/serialize.h>
+#include "capnzero_utils.h"
 
 using namespace capnzero;
 using namespace capnzero::{0};
-
-QClientRpc::QClientRpc(zmq::context_t& rZmqContext, const std::string& rpcAddr, QObject *pParent):
-    QObject(pParent),
-    {0}ClientRpcTransport(rZmqContext, rpcAddr)
-{{
-}}
 
 {1}
 
