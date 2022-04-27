@@ -11,10 +11,11 @@ namespace capnzero::TemperatureQt{
 class RpcImpl : public RpcIf
 {
 public:
-    RpcImpl(TemperatureQtServer::Signals& rSignals, float& rActualTemperature, float& rCommandedTemperature) :
+    RpcImpl(TemperatureQtServer::Signals& rSignals, float& rActualTemperature, float& rCommandedTemperature, bool& enabled) :
         m_rSignals(rSignals),
         m_rActualTemperature(rActualTemperature),
-        m_rCommandedTemperature(rCommandedTemperature)
+        m_rCommandedTemperature(rCommandedTemperature),
+        m_rEnabled(enabled)
     {}
 	void setCommandedTemperature(Float32 val) override
     {
@@ -24,10 +25,26 @@ public:
             m_rSignals.commandedTemperatureChanged(m_rCommandedTemperature);
         }
     }
+	void setEnabled(UInt8 val) override
+    {
+        if(m_rEnabled != val)
+        {
+            m_rEnabled = val;
+            m_rSignals.enabledChanged(m_rEnabled);
+        }
+    }
+
+	void toggleEnabled() override
+    {
+        m_rEnabled != m_rEnabled;
+        m_rSignals.enabledChanged(m_rEnabled);
+    }
+
 private:
     TemperatureQtServer::Signals& m_rSignals;
     float& m_rActualTemperature;
     float& m_rCommandedTemperature;
+    bool &m_rEnabled;
 };
 
 }
@@ -39,10 +56,11 @@ int main()
     zmq::context_t context;
     float actualTemperatureTmp = 0.3;
     float commandedTemperature = 0.7;
+    bool enabled = false;
     TemperatureQtServer server(context,
                                "tcp://*:5555",
                                "tcp://*:5556",
-                                std::make_unique<RpcImpl>(server.signals(), actualTemperatureTmp, commandedTemperature));
+                                std::make_unique<RpcImpl>(server.signals(), actualTemperatureTmp, commandedTemperature, enabled));
 
     int timerFd = timerfd_create(CLOCK_MONOTONIC, 0);
     constexpr auto Period = std::chrono::milliseconds(30);
