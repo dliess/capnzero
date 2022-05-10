@@ -40,6 +40,9 @@ def create_capnzero_server_file_h_content_str(data, file_we):
     elif has_signal_handling:
         constructor_decl = "\t{}Server(zmq::context_t& rZmqContext, const std::string& signalBindAddr);".format(file_we)
 
+    unbind_decl = ""
+    if has_rpc:
+        unbind_decl = "\tvoid unbind(const std::string& rpcBindAddr);"
 
     public_rpc_part = ""
     if has_rpc:
@@ -60,6 +63,7 @@ def create_capnzero_server_file_h_content_str(data, file_we):
     {{
     public:
         Signals(zmq::context_t& rZmqContext, const std::string& signalBindAddr);
+        void unbind(const std::string& signalBindAddr);
         int getFd() const;
         void handleAllSubscriptions();
 {0}
@@ -103,13 +107,14 @@ public:
 {3}
 {4}
 {5}
-private:
 {6}
+private:
 {7}
+{8}
 }};
 
 }} // namespace capnzero::{2}
 #endif
-""".format(file_we.upper(), cbif_includes, file_we, constructor_decl, public_rpc_part, public_signals_part, private_rpc_part, private_signals_part)
+""".format(file_we.upper(), cbif_includes, file_we, constructor_decl, unbind_decl, public_rpc_part, public_signals_part, private_rpc_part, private_signals_part)
 
     return outStr

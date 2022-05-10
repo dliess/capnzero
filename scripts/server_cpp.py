@@ -192,6 +192,8 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
     m_rZmqPubSocket.set(zmq::sockopt::xpub_verbose, true);
 }}
 
+void {0}Server::Signals::unbind(const std::string& signalBindAddr) {{ m_rZmqPubSocket.unbind(signalBindAddr); }}
+
 int {0}Server::Signals::getFd() const
 {{
     return m_rZmqPubSocket.get(zmq::sockopt::fd);
@@ -239,6 +241,7 @@ using namespace capnzero::{0};
 
     if has_rpc:
         outStr += """\
+void {0}Server::unbind(const std::string& rpcBindAddr) {{ m_zmqRepSocket.unbind(rpcBindAddr); }}   
 void {0}Server::processNextRequest(WaitMode waitMode) {{
     zmq::message_t routerId;
     auto res0 = m_zmqRepSocket.recv(routerId, (waitMode == WaitMode::Blocking) ? zmq::recv_flags::none : zmq::recv_flags::dontwait);
