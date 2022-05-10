@@ -61,6 +61,8 @@ struct TwoIntParams{
         parameter = { brightness = 'UInt32' }
     [services.Screen.rpc.setColor]
         parameter = { color = 'EColor' }
+    [services.Screen.signal.colorChanged]
+        parameter = { color = 'EColor' }
     [services.Screen.signal.brightnessChanged]
         parameter = { brightness = 'UInt32' }
     [services.Screen.rpc.setTitle]

@@ -95,6 +95,7 @@ def create_capnzero_server_file_h_content_str(data, file_we):
 #include <functional>
 #include <unordered_map>
 #include "capnzero_typedefs.h"
+#include "{2}.capnp.h"
 
 {1}
 
