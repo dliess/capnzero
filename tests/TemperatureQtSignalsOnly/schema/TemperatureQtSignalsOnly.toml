@@ -1,5 +1,9 @@
 # parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
+[enumerations]
+    ETempRange = { Cold = 0, Hot = 1 }
+
 [services]
     [services._.properties]
         sensorName = { type = 'Text', access = "read-only" }
         actualTemperature = { type = 'Float32', access = "read-only" }
+        tempRange = { type = 'ETempRange', access = "read-only" }

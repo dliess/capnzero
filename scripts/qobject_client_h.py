@@ -210,10 +210,11 @@ def create_capnzero_qobject_client_file_h_content_str(data, file_we):
 
 #include <QObject>
 #include <QString>
+#include "{1}.capnp.h"
 
-{1}
 {2}
 {3}
+{4}
 
 #endif
-""".format(to_snake_case(file_we).upper(), create_rpc_part(file_we, data), create_signal_part(file_we, data), create_qtclient(file_we, data))
+""".format(to_snake_case(file_we).upper(), file_we, create_rpc_part(file_we, data), create_signal_part(file_we, data), create_qtclient(file_we, data))
