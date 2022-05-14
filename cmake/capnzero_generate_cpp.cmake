@@ -6,7 +6,9 @@ function(capnzero_generate_cpp)
     GEN_CPP_HEADERS
     GEN_QT_CPP_SOURCES
     GEN_QT_CPP_HEADERS
-    GEN_OUT_DIR IDL_FILE
+    GEN_OUT_DIR 
+    IDL_FILE
+    CLANG_FORMAT
   )
   set(multiValues)
   cmake_parse_arguments(
@@ -76,6 +78,7 @@ function(capnzero_generate_cpp)
     COMMAND python3 ${GENERATOR_SCRIPT_PATH}
     ARGS  --outdir=${_GEN_OUTPUT_DIR}
           --descrfile=${ARG_IDL_FILE}
+          --clang_format=${ARG_CLANG_FORMAT}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS ${GENERATOR_SCRIPT_PATH}  ${ARG_IDL_FILE} ${ALL_GENERATOS_SCRIPTS}
     COMMENT "Running capnzeroc generator script on ${${ARG_IDL_FILE}}"

@@ -45,18 +45,22 @@ def expand_properties(data):
 
 outdir="undefined"
 descrfile="undefined"
-options, remainder = getopt.getopt(sys.argv[1:], ['o:d:'], ['outdir=', 'descrfile='])
+clang_format="OFF"
+options, remainder = getopt.getopt(sys.argv[1:], ['o:d:c:'], ['outdir=', 'descrfile=', 'clang_format='])
 for opt, arg in options:
     if opt in ('-o', '--outdir'):
         outdir = arg
     elif opt in ('-d', '--descrfile'):
         descrfile = arg
+    elif opt in ('-c', '--clang_format'):
+        clang_format = arg
 
 file_we = os.path.splitext(os.path.basename(descrfile))[0]
 
 print("outdir: " + outdir)
 print("descrfile: " + descrfile)
 print("file_we: " + file_we)
+print("clang_format: " + clang_format)
 
 from pathlib import Path
 Path(outdir).mkdir(parents=True, exist_ok=True)
@@ -117,3 +121,14 @@ with open(qobject_client_h_file, 'w') as open_file:
 
 with open(qobject_client_cpp_file, 'w') as open_file:
     open_file.write(create_capnzero_qobject_client_file_cpp_content_str(data, file_we))
+
+if clang_format == "ON" or clang_format == "on" or clang_format == "On":
+    os.system('clang-format -style=file -i ' + client_transport_h_file)
+    os.system('clang-format -style=file -i ' + client_transport_inl_file)
+    os.system('clang-format -style=file -i ' + client_h_file)
+    os.system('clang-format -style=file -i ' + client_inl_file)
+    os.system('clang-format -style=file -i ' + client_cpp_file)
+    os.system('clang-format -style=file -i ' + server_h_file)
+    os.system('clang-format -style=file -i ' + server_cpp_file)
+    os.system('clang-format -style=file -i ' + qobject_client_h_file)
+    os.system('clang-format -style=file -i ' + qobject_client_cpp_file)
