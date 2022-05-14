@@ -25,7 +25,7 @@ public:
             m_rSignals.commandedTemperatureChanged(m_rCommandedTemperature);
         }
     }
-	void setEnabled(UInt8 val) override
+	void setEnabled(Bool val) override
     {
         if(m_rEnabled != val)
         {

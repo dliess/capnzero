@@ -20,7 +20,8 @@ def is_integral_type(capnz_type):
     for enum_name in global_types.enumerations:
         if capnz_type == enum_name:
             return True
-    return capnz_type == "Int8" or \
+    return capnz_type == "Bool" or \
+           capnz_type == "Int8" or \
            capnz_type == "Int16" or \
            capnz_type == "Int32" or \
            capnz_type == "Int64" or \
@@ -278,7 +279,9 @@ def map_type_to_qt_type(capnz_type):
     for enum_name in global_types.enumerations:
         if capnz_type == enum_name:
             return capnz_type
-    if capnz_type == "Int8":
+    if capnz_type == "Bool":
+        return "bool"
+    elif capnz_type == "Int8":
         return "qint8"
     elif capnz_type == "Int16":
         return "qint16"

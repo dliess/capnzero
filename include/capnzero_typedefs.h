@@ -18,7 +18,7 @@ using SpanCL = utils::span<const uint8_t, SIZE>;
 template<std::size_t SIZE>
 using Data = std::array<uint8_t, SIZE>;
 
-
+using Bool = bool;
 using Int8 = int8_t;
 using Int16 = int16_t;
 using Int32 = int32_t;
