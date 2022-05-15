@@ -9,6 +9,7 @@ function(capnzero_generate_cpp)
     GEN_OUT_DIR 
     IDL_FILE
     CLANG_FORMAT
+    SKIP_GENERATION
   )
   set(multiValues)
   cmake_parse_arguments(
@@ -64,26 +65,28 @@ function(capnzero_generate_cpp)
   )
 
   set(GEN_CAPNP_FILE "${_GEN_OUTPUT_DIR}/${FIL_WLE}.capnp")
-  add_custom_command(
-    OUTPUT  "${GEN_CAPNP_FILE}"
-            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_ClientTransport.h"
-            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_ClientTransport.inl"
-            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.h"
-            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.inl"
-            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.cpp"
-            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.h"
-            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.cpp"
-            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.h"
-            "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.cpp"
-    COMMAND python3 ${GENERATOR_SCRIPT_PATH}
-    ARGS  --outdir=${_GEN_OUTPUT_DIR}
-          --descrfile=${ARG_IDL_FILE}
-          --clang_format=${ARG_CLANG_FORMAT}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS ${GENERATOR_SCRIPT_PATH}  ${ARG_IDL_FILE} ${ALL_GENERATOS_SCRIPTS}
-    COMMENT "Running capnzeroc generator script on ${${ARG_IDL_FILE}}"
-    VERBATIM
-  )
+  if(NOT ARG_SKIP_GENERATION)
+    add_custom_command(
+      OUTPUT  "${GEN_CAPNP_FILE}"
+              "${_GEN_OUTPUT_DIR}/${FIL_WLE}_ClientTransport.h"
+              "${_GEN_OUTPUT_DIR}/${FIL_WLE}_ClientTransport.inl"
+              "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.h"
+              "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.inl"
+              "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.cpp"
+              "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.h"
+              "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.cpp"
+              "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.h"
+              "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.cpp"
+      COMMAND python3 ${GENERATOR_SCRIPT_PATH}
+      ARGS  --outdir=${_GEN_OUTPUT_DIR}
+            --descrfile=${ARG_IDL_FILE}
+            --clang_format=${ARG_CLANG_FORMAT}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      DEPENDS ${GENERATOR_SCRIPT_PATH}  ${ARG_IDL_FILE} ${ALL_GENERATOS_SCRIPTS}
+      COMMENT "Running capnzeroc generator script on ${${ARG_IDL_FILE}}"
+      VERBATIM
+    )
+  endif()
 
   if(NOT CAPNP_EXECUTABLE)
     if(DEFINED ENV{CAPNP})
@@ -115,28 +118,29 @@ function(capnzero_generate_cpp)
   message(STATUS "Found capnpc-c++ executable is ${CAPNPC_CXX_EXECUTABLE}")
 
   set(CAPNP_GENERATE_BASE_PATH "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WLE}.capnp")
-  add_custom_command(
-    OUTPUT "${CAPNP_GENERATE_BASE_PATH}.c++" "${CAPNP_GENERATE_BASE_PATH}.h"
-    COMMAND ${CAPNP_EXECUTABLE}
-    ARGS compile
-        -o ${CAPNPC_CXX_EXECUTABLE}
-        --src-prefix ${_GEN_OUTPUT_DIR}
-        ${GEN_CAPNP_FILE}
-    DEPENDS "${GEN_CAPNP_FILE}"
-    COMMENT "Compiling Cap'n Proto schema ${GEN_CAPNP_FILE}"
-    VERBATIM
-  )
-
-  if(NOT ${_GEN_OUTPUT_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+  if(NOT ARG_SKIP_GENERATION)
     add_custom_command(
-      OUTPUT "${GEN_CAPNP_FILE}.c++" "${GEN_CAPNP_FILE}.h"
-      COMMAND ${CMAKE_COMMAND} -E copy "${CAPNP_GENERATE_BASE_PATH}.c++" "${CAPNP_GENERATE_BASE_PATH}.h" "${_GEN_OUTPUT_DIR}/."
-      DEPENDS "${CAPNP_GENERATE_BASE_PATH}.c++" "${CAPNP_GENERATE_BASE_PATH}.h"
-      COMMENT "Copying capnp generated sources to destination folder"
+      OUTPUT "${CAPNP_GENERATE_BASE_PATH}.c++" "${CAPNP_GENERATE_BASE_PATH}.h"
+      COMMAND ${CAPNP_EXECUTABLE}
+      ARGS compile
+          -o ${CAPNPC_CXX_EXECUTABLE}
+          --src-prefix ${_GEN_OUTPUT_DIR}
+          ${GEN_CAPNP_FILE}
+      DEPENDS "${GEN_CAPNP_FILE}"
+      COMMENT "Compiling Cap'n Proto schema ${GEN_CAPNP_FILE}"
       VERBATIM
     )
-  endif()
 
+    if(NOT ${_GEN_OUTPUT_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+      add_custom_command(
+        OUTPUT "${GEN_CAPNP_FILE}.c++" "${GEN_CAPNP_FILE}.h"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CAPNP_GENERATE_BASE_PATH}.c++" "${CAPNP_GENERATE_BASE_PATH}.h" "${_GEN_OUTPUT_DIR}/."
+        DEPENDS "${CAPNP_GENERATE_BASE_PATH}.c++" "${CAPNP_GENERATE_BASE_PATH}.h"
+        COMMENT "Copying capnp generated sources to destination folder"
+        VERBATIM
+      )
+    endif()
+  endif()
   if(ARG_GEN_CPP_SOURCES)
       list(APPEND ${ARG_GEN_CPP_SOURCES} "${GEN_CAPNP_FILE}.c++")
       list(APPEND ${ARG_GEN_CPP_SOURCES} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Client.cpp")

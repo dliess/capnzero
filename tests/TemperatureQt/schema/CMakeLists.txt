@@ -17,6 +17,7 @@ capnzero_generate_cpp(
     GEN_OUT_DIR        ${OUT_DIR}
     IDL_FILE           "TemperatureQt.toml"
     CLANG_FORMAT       "ON"
+    SKIP_GENERATION    "OFF"
 )
 
 add_library(${TargetBaseName}-schema STATIC
