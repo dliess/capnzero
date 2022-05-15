@@ -13,7 +13,7 @@ struct TwoIntParams{
     EColor = { Blue = 0, Red = 1, Green = 2, Yellow = 3 }
     EMode = { Dimmed = 0, Bright = 1 }
 
-# parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
+# parameter types: Bool, IntX, UIntX, Float32, Float64, Text, Span, Data<X>
 [services]
     [services._.rpc.add]
         parameter = { a = 'Int32', b = 'Int32' }

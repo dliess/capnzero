@@ -1,4 +1,4 @@
-# parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
+# parameter types: Bool, IntX, UIntX, Float32, Float64, Text, Span, Data<X>
 [services]
     [services.Calculator.rpc.add]
         parameter = { a = 'Int32', b = 'Int32' }

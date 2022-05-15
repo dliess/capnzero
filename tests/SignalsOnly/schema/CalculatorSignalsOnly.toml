@@ -1,4 +1,4 @@
-# parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
+# parameter types: Bool, IntX, UIntX, Float32, Float64, Text, Span, Data<X>
 [enumerations]
     EColor = { Blue = 0, Red = 1, Green = 2, Yellow = 3 }
 

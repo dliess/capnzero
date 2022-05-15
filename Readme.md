@@ -25,6 +25,7 @@ __Calculator.toml__ --> the file basename is used as service name and namespace 
 <ins>**signals**</ins> can only have input parameter, wich can be omitted when void
 
 The used **types** can be one of:
+    * Bool
     * Int8 Int16 Int32 Int64
     * UInt8 UInt16 UInt32 UInt64
     * Float32, Float64

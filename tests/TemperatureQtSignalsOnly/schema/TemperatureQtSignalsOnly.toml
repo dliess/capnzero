@@ -1,4 +1,4 @@
-# parameter types: IntX, UIntX, Float32, Float64, Text, Span, Data<X>
+# parameter types: Bool, IntX, UIntX, Float32, Float64, Text, Span, Data<X>
 [enumerations]
     ETempRange = { Cold = 0, Hot = 1 }
 
