@@ -61,6 +61,7 @@ print("outdir: " + outdir)
 print("descrfile: " + descrfile)
 print("file_we: " + file_we)
 print("clang_format: " + clang_format)
+do_clang_format = (clang_format == "ON" or clang_format == "on" or clang_format == "On")
 
 from pathlib import Path
 Path(outdir).mkdir(parents=True, exist_ok=True)
@@ -106,8 +107,11 @@ for service_name in data["services"]:
     service = data["services"][service_name]
     if "rpc" in service:
         rpc_if_filename_we = file_we + create_member_cb_if_type(service_name)
-        with open(outdir + "/" + rpc_if_filename_we + ".h", 'w') as open_file:
+        rpc_if_filename = outdir + "/" + rpc_if_filename_we + ".h"
+        with open(rpc_if_filename, 'w') as open_file:
             open_file.write(create_capnzero_cbif_h_content_str(service_name, service["rpc"], rpc_if_filename_we, file_we))
+        if do_clang_format:
+            os.system('clang-format -style=file -i ' + rpc_if_filename)
 
 with open(server_h_file, 'w') as open_file:
     open_file.write(create_capnzero_server_file_h_content_str(data, file_we))
@@ -122,7 +126,7 @@ with open(qobject_client_h_file, 'w') as open_file:
 with open(qobject_client_cpp_file, 'w') as open_file:
     open_file.write(create_capnzero_qobject_client_file_cpp_content_str(data, file_we))
 
-if clang_format == "ON" or clang_format == "on" or clang_format == "On":
+if do_clang_format:
     os.system('clang-format -style=file -i ' + client_transport_h_file)
     os.system('clang-format -style=file -i ' + client_transport_inl_file)
     os.system('clang-format -style=file -i ' + client_h_file)
