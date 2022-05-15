@@ -7,12 +7,16 @@
        "GID": "1000",
              },
        },
-    "runArgs" : [ "--rm", "--privileged" ],
+    "runArgs" : [ "--rm", "--privileged", "--network=host" ],
     "mounts" : [
+      "type=bind,source=${env:HOME}/.ssh,target=/home/build-user/.ssh",
       "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
       "source=${localEnv:HOME}/.Xauthority,target=/home/build-user/.Xauthority,type=bind,consistency=cached"
     ],
-    "containerEnv": {"DISPLAY": "${localEnv:DISPLAY}"},
+    "containerEnv": {"DISPLAY":
+        "${localEnv:DISPLAY}",
+        "CPM_SOURCE_CACHE": "/home/build-user/CPM_DOWNLOADS" 
+    },
     "settings": { 
        "terminal.integrated.shell.linux": "/bin/zsh"
     },
