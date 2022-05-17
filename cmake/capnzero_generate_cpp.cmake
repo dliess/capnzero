@@ -140,6 +140,13 @@ function(capnzero_generate_cpp)
         VERBATIM
       )
     endif()
+    if(ARG_CLANG_FORMAT)
+      add_custom_target(${FIL_WLE}-clang-format-capnp-files ALL
+        ${CMAKE_COMMAND} -E echo "clang-format -style=file -i ${GEN_CAPNP_FILE}.c++ ${GEN_CAPNP_FILE}.h"
+        COMMAND clang-format -style=file -i "${GEN_CAPNP_FILE}.c++" "${GEN_CAPNP_FILE}.h"
+        DEPENDS "${GEN_CAPNP_FILE}.c++" "${GEN_CAPNP_FILE}.h"
+      )
+    endif()
   endif()
   if(ARG_GEN_CPP_SOURCES)
       list(APPEND ${ARG_GEN_CPP_SOURCES} "${GEN_CAPNP_FILE}.c++")

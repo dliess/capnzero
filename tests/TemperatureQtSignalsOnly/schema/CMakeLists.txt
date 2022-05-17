@@ -16,6 +16,7 @@ capnzero_generate_cpp(
     GEN_QT_CPP_HEADERS gen_qt_cpp_headers
     GEN_OUT_DIR        ${OUT_DIR}
     IDL_FILE           "TemperatureQtSignalsOnly.toml"
+    CLANG_FORMAT       "ON"
 )
 
 add_library(${TargetBaseName}-schema STATIC
