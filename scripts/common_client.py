@@ -70,7 +70,7 @@ def create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namesp
         ret_str += indent + "{0}{2}({3})".format(add_whitespace(return_type_str, 10), method_name, parameter_str)
     return ret_str
 
-def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, class_namespace, type_converter_fn = None):
+def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, class_namespace, type_converter_fn = None, webchannel_support = False):
     method_head = create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namespace, type_converter_fn = type_converter_fn)
     param_type = rpc_param_type(rpc_info)
     return_type = rpc_return_type(rpc_info)
@@ -82,7 +82,11 @@ def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, 
         for param_name, p_type in rpc_info["parameter"].items():
             if(map_descr_type_to_capnp_type(p_type) == 'Data'):
                 if type_converter_fn and type_converter_fn(p_type) == "QByteArray":
-                    req_msg_builder += "\tparamBuilder.set{0}(capnp::Data::Reader(reinterpret_cast<const ::capnp::byte*>({1}.data()), {1}.size()));\n".format(upperfirst(param_name), param_name)
+                    if webchannel_support:
+                        req_msg_builder += "\tauto {0}_converted = QByteArray::fromBase64({0}, QByteArray::Base64Encoding);\n".format(param_name)
+                        req_msg_builder += "\tparamBuilder.set{0}(capnp::Data::Reader(reinterpret_cast<const ::capnp::byte*>({1}_converted.data()), {1}_converted.size()));\n".format(upperfirst(param_name), param_name)
+                    else:
+                        req_msg_builder += "\tparamBuilder.set{0}(capnp::Data::Reader(reinterpret_cast<const ::capnp::byte*>({1}.data()), {1}.size()));\n".format(upperfirst(param_name), param_name)
                 else:
                     req_msg_builder += "\tparamBuilder.set{0}(capnp::Data::Reader({1}.data(), {1}.size()));\n".format(upperfirst(param_name), param_name)
             else:
@@ -125,8 +129,10 @@ def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, 
         member_type = rpc_info["returns"]
         if map_descr_type_to_capnp_type(member_type) == 'Data':
             lambda_content += "\t\t\tauto src = reader.get{}();\n".format(upperfirst(member_name))
-            lambda_content += "\t\t\tassert(src.size() == retVal.{}.size());\n".format(member_name)
-            lambda_content += "\t\t\tstd::copy(src.begin(), src.end(), retVal.{}.begin());\n".format(member_name)
+            lambda_content += "\t\t\tassert(src.size() == retVal.size());\n"
+            lambda_content += "\t\t\tstd::copy(src.begin(), src.end(), retVal.begin());\n"
+            if webchannel_support:
+                lambda_content += "\t\t\tretVal = retVal.toBase64();\n"
         else:
             if type_converter_fn and type_converter_fn(member_type) == "QString":
                 lambda_content += "\t\t\tretVal = reader.get{0}().cStr();\n".format(upperfirst(member_name))

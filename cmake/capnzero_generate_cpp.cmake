@@ -5,6 +5,7 @@ function(capnzero_generate_cpp)
     GEN_CPP_SOURCES
     GEN_CPP_HEADERS
     GEN_QT_CPP_SOURCES
+    GEN_QT_WC_CPP_SOURCES
     GEN_QT_CPP_HEADERS
     GEN_OUT_DIR 
     IDL_FILE
@@ -26,6 +27,9 @@ function(capnzero_generate_cpp)
   endif()
   if(ARG_GEN_QT_CPP_SOURCES)
     set(${ARG_GEN_QT_CPP_SOURCES})
+  endif()
+  if(ARG_GEN_QT_WC_CPP_SOURCES)
+    set(${ARG_GEN_QT_WC_CPP_SOURCES})
   endif()
   if(ARG_GEN_QT_CPP_HEADERS)
     set(${ARG_GEN_QT_CPP_HEADERS})
@@ -77,6 +81,7 @@ function(capnzero_generate_cpp)
               "${_GEN_OUTPUT_DIR}/${FIL_WLE}_Server.cpp"
               "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.h"
               "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.cpp"
+              "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectWcClient.cpp"
       COMMAND python3 ${GENERATOR_SCRIPT_PATH}
       ARGS  --outdir=${_GEN_OUTPUT_DIR}
             --descrfile=${ARG_IDL_FILE}
@@ -166,6 +171,10 @@ function(capnzero_generate_cpp)
   if(ARG_GEN_QT_CPP_SOURCES)
     list(APPEND ${ARG_GEN_QT_CPP_SOURCES} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.cpp")
     set(${ARG_GEN_QT_CPP_SOURCES} ${${ARG_GEN_QT_CPP_SOURCES}} PARENT_SCOPE)
+  endif() 
+  if(ARG_GEN_QT_WC_CPP_SOURCES)
+    list(APPEND ${ARG_GEN_QT_WC_CPP_SOURCES} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectWcClient.cpp")
+    set(${ARG_GEN_QT_WC_CPP_SOURCES} ${${ARG_GEN_QT_WC_CPP_SOURCES}} PARENT_SCOPE)
   endif() 
   if(ARG_GEN_QT_CPP_HEADERS)
     list(APPEND ${ARG_GEN_QT_CPP_HEADERS} "${_GEN_OUTPUT_DIR}/${FIL_WLE}_QObjectClient.h")

@@ -115,7 +115,7 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
                         return_name = "retParam"
                         return_type = rpc_info["returns"]
                         if map_descr_type_to_capnp_type(return_type) == "Data":
-                            cases_str += "\t\t\t\t\tbuilder.set{0}(capnp::Data::Reader(ret.{1}.data(), ret.{1}.size()));\n".format(upperfirst(return_name), return_name)
+                            cases_str += "\t\t\t\t\tbuilder.set{0}(capnp::Data::Reader(ret.data(), ret.size()));\n".format(upperfirst(return_name))
                         else:
                             cases_str += "\t\t\t\t\tbuilder.set{}(ret);\n".format(upperfirst(return_name))
                     cases_str += "\t\t\t\t\tm_zmqRepSocket.send(routerId, zmq::send_flags::sndmore);\n"

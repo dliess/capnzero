@@ -5,3 +5,10 @@
         actualTemperature = { type = 'Float32', access = "read-only" }
         commandedTemperature = 'Float32'
         enabled = {type = 'Bool', access = "read-write-toggle"}
+        uuid = { type = 'Data<16>', access = "read-write" }
+    [services._.rpc.explicitSetUUID]
+        parameter = { uuid = 'Data<16>' }
+    [services._.rpc.explicitGetUUID]
+        returns = 'Data<16>'
+    [services._.signal.explicitSignalUUID]
+        parameter = { uuid = 'Data<16>' }

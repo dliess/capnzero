@@ -2,7 +2,7 @@ import global_types
 from common import *
 from common_client import *
 
-def create_all_client_definition_for_rpc(file_we, data):
+def create_all_client_definition_for_rpc(file_we, data, webchannel_support):
     if not has_rpc(data):
         return ""
     client_definition_for_rpc = """
@@ -19,7 +19,7 @@ QClientRpc::QClientRpc(zmq::context_t& rZmqContext, const std::string& rpcAddr, 
             for rpc_name in data["services"][service_name]["rpc"]:
                 rpc_info = data["services"][service_name]["rpc"][rpc_name]
                 if is_valid_for_qt_rpc_client(rpc_info):
-                    client_definition_for_rpc += create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, class_namespace = "QClientRpc", type_converter_fn = map_type_to_qt_type)
+                    client_definition_for_rpc += create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, class_namespace = "QClientRpc", type_converter_fn = map_type_to_qt_type, webchannel_support = webchannel_support)
     return client_definition_for_rpc
 
 def create_subscriptions(data):
@@ -33,7 +33,7 @@ def create_subscriptions(data):
                 ret_str += "\tm_zmqSubSocket.set(zmq::sockopt::subscribe, \"{}\");".format(create_signal_method_name(service_name, signal_name))
     return ret_str
 
-def create_string_comparisons(data):
+def create_string_comparisons(data, webchannel_support = False):
     string_comparisons = ""
     for service_name in data["services"]:
         if "signal" in data["services"][service_name]:
@@ -55,9 +55,11 @@ def create_string_comparisons(data):
                         string_comparisons += "\t\tauto paramReader = msgReader.getRoot<{}>();\n".format(create_capnp_signal_param_type_str(service_name, signal_name))
                         cb_call_params = ""
                         for param_name, param_type in param_info.items():
-                            cpp_rpc_if_type = map_type_to_qt_type(param_type)
-                            if cpp_rpc_if_type == "QByteArray" or cpp_rpc_if_type == "QString":
+                            qt_mapped_type = map_type_to_qt_type(param_type)
+                            if qt_mapped_type == "QByteArray" or qt_mapped_type == "QString":
                                 cb_call_params += "QByteArray(reinterpret_cast<const char *>(paramReader.get{0}().begin()), int(paramReader.get{0}().size()))".format(upperfirst(param_name))
+                                if qt_mapped_type == "QByteArray" and webchannel_support == True:
+                                    cb_call_params += ".toBase64()"
                             else:
                                 cb_call_params += "paramReader.get{}()".format(upperfirst(param_name))
                             if list(param_info.keys())[-1] != param_name:
@@ -158,7 +160,7 @@ def create_qclient_invokable_definitions(data):
                 ret += "}\n\n"
     return ret
 
-def create_capnzero_qobject_client_file_cpp_content_str(data, file_we):
+def create_capnzero_qobject_client_file_cpp_content_str(data, file_we, webchannel_support = False):
     return """\
 #include "{0}_QObjectClient.h"
 #include "{0}.capnp.h"
@@ -210,8 +212,8 @@ int QClientSignals::getFd() const
 {5}
 
 """.format(file_we, \
-           create_all_client_definition_for_rpc(file_we, data), \
+           create_all_client_definition_for_rpc(file_we, data, webchannel_support), \
            create_subscriptions(data), \
-           create_string_comparisons(data), \
+           create_string_comparisons(data, webchannel_support), \
            create_qclient_constructor_definition(data), \
            create_qclient_invokable_definitions(data))

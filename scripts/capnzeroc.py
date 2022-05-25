@@ -76,6 +76,7 @@ server_h_file = outdir + "/" + file_we + "_Server.h"
 server_cpp_file = outdir + "/" + file_we + "_Server.cpp"
 qobject_client_h_file = outdir + "/" + file_we + "_QObjectClient.h"
 qobject_client_cpp_file = outdir + "/" + file_we + "_QObjectClient.cpp"
+qobject_wc_client_cpp_file = outdir + "/" + file_we + "_QObjectWcClient.cpp"
 
 data = toml.load(descrfile)
 global_types.init()
@@ -124,7 +125,10 @@ with open(qobject_client_h_file, 'w') as open_file:
     open_file.write(create_capnzero_qobject_client_file_h_content_str(data, file_we))
 
 with open(qobject_client_cpp_file, 'w') as open_file:
-    open_file.write(create_capnzero_qobject_client_file_cpp_content_str(data, file_we))
+    open_file.write(create_capnzero_qobject_client_file_cpp_content_str(data, file_we, webchannel_support = False))
+
+with open(qobject_wc_client_cpp_file, 'w') as open_file:
+    open_file.write(create_capnzero_qobject_client_file_cpp_content_str(data, file_we, webchannel_support = True))
 
 if do_clang_format:
     os.system('clang-format -style=file -i ' + client_transport_h_file)
@@ -136,3 +140,4 @@ if do_clang_format:
     os.system('clang-format -style=file -i ' + server_cpp_file)
     os.system('clang-format -style=file -i ' + qobject_client_h_file)
     os.system('clang-format -style=file -i ' + qobject_client_cpp_file)
+    os.system('clang-format -style=file -i ' + qobject_wc_client_cpp_file)

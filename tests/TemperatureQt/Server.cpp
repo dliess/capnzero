@@ -40,6 +40,21 @@ public:
         m_rSignals.enabledChanged(m_rEnabled);
     }
 
+    void setUuid(const SpanCL<16>& val) override
+    {
+
+    }
+
+    Data<16> explicitGetUUID() override
+    {
+        return Data<16>{};
+    }
+
+    void explicitSetUUID(const SpanCL<16>& uuid) override
+    {
+
+    }
+
 private:
     TemperatureQtServer::Signals& m_rSignals;
     float& m_rActualTemperature;
