@@ -6,15 +6,26 @@
 #include <array>
 #include <vector>
 #include <cstdint>
+#include <version>
+#ifdef __cpp_lib_span
+#include <span>
+#else
 #include "span.h"
+#endif
 
 namespace capnzero{
 
 using Text = std::string;
 using TextView = std::string_view;
+#ifdef __cpp_lib_span
+using Span = std::span<const uint8_t, std::dynamic_extent>;
+template<std::size_t SIZE>
+using SpanCL = std::span<const uint8_t, SIZE>;
+#else
 using Span = utils::span<const uint8_t, utils::dynamic_extent>;
 template<std::size_t SIZE>
 using SpanCL = utils::span<const uint8_t, SIZE>;
+#endif
 template<std::size_t SIZE>
 using Data = std::array<uint8_t, SIZE>;
 
