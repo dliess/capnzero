@@ -14,7 +14,7 @@ capnzero_generate_cpp(
     GEN_QT_CPP_SOURCES gen_qt_cpp_sources
     GEN_QT_CPP_HEADERS gen_qt_cpp_headers
     GEN_OUT_DIR        ${CMAKE_CURRENT_BINARY_DIR}
-    IDL_FILE           "CalculatorQt.toml"
+    IDL_FILE           "CalculatorQtWebchannel.toml"
 )
 
 add_library(${TargetBaseName}-schema STATIC

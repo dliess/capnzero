@@ -1,4 +1,4 @@
-#include "CalculatorQt_QObjectClient.h"
+#include "CalculatorQtWebchannel_QObjectClient.h"
 #include <iostream>
 #include <chrono>
 #include <QCoreApplication>
@@ -6,6 +6,8 @@
 #include <QWebSocketServer>
 #include <WebSocketClientWrapper.h>
 #include <WebSocketTransport.h>
+
+using namespace capnzero::CalculatorQtWebchannel;
 
 int main(int argc, char* argv[])
 {
@@ -24,7 +26,7 @@ int main(int argc, char* argv[])
     QObject::connect(&clientWrapper, &WebSocketClientWrapper::clientConnected,
                         &channel, &QWebChannel::connectTo);
 
-    capnzero::CalculatorQtQObjectClient wcServiceObj(context,
+    QClient wcServiceObj(context,
                                                      "tcp://*:5555",
                                                      "tcp://*:5556");
     channel.registerObject(QStringLiteral("Calculator"), &wcServiceObj);

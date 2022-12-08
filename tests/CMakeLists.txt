@@ -1,4 +1,5 @@
 add_subdirectory(Calculator)
+add_subdirectory(CalculatorQtWebchannel)
 add_subdirectory(TemperatureQt)
 add_subdirectory(TemperatureQtWithServiceName)
 add_subdirectory(TemperatureQtSignalsOnly)
