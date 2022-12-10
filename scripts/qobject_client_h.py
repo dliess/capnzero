@@ -177,6 +177,19 @@ def create_qclient_constructor_declaration(data):
         ret += "\texplicit QClient(zmq::context_t& rZmqContext, const std::string& signalAddr, QObject* pParent = nullptr);"
     return ret
 
+def create_qclient_enum_declarations():
+    enum_str = ""
+    for enum_name in global_types.enumerations:
+        enum_str += "\tenum class {} {{\n".format(enum_name)
+        enum_data = global_types.enumerations[enum_name]
+        for i, (enum_element_name, enum_element_number) in enumerate(enum_data.items()):
+            enum_str += "\t\t{} = {}".format(enum_element_name, enum_element_number)
+            if i < len(enum_data) - 1:
+                enum_str += ","
+            enum_str += "\n"
+        enum_str += "\t}};\n\tQ_ENUM({})\n".format(enum_name)
+    return enum_str
+
 def create_qtclient(file_we, data):
     return """\
 namespace capnzero::{0}
@@ -189,16 +202,18 @@ class QClient : public QObject
 public:
 {2}
 {3}
-signals:
 {4}
-private:
+signals:
 {5}
+private:
+{6}
 }};
 
 }} // namespace capnzero::{0}
 """.format(file_we, \
            create_qproperty_declarations(data), \
            create_qclient_constructor_declaration(data), \
+           create_qclient_enum_declarations(), \
            create_qclient_invokable_declarations(data), \
            create_qclient_signal_fn_declarations(data, "\t", map_type_to_qt_type), \
            create_qobject_private_members(data))

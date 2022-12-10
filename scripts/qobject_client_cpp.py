@@ -81,14 +81,13 @@ def create_qclient_signal_connections(data):
                 if has_property(data["services"][service_name], property_name):
                     property_name_with_prefix = create_property_var_name(service_name, property_name)
                     ret += """\
-\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, [this]({1}){{
-\t\tif(m_{2} != val){{
-\t\t\tm_{2} = val;
+\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, [this](const auto& val){{
+\t\tif(m_{1} != static_cast<decltype(m_{1})>(val)){{
+\t\t\tm_{1} = static_cast<decltype(m_{1})>(val);
 \t\t\temit {0}();
 \t\t}}
 \t}});
 """.format(create_signal_method_name_qt(service_name, signal_name), \
-           create_fn_input_parameter_str_sender(signal_info, map_type_to_qt_type), \
            property_name_with_prefix)
                 else:
                     ret += "\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, this, &QClient::{0});\n".format(create_signal_method_name_qt(service_name, signal_name))
@@ -132,7 +131,7 @@ QClient::QClient(zmq::context_t& rZmqContext,
 """.format(create_qclient_signal_connections(data))
     return ret
 
-def create_qclient_invokable_definitions(data):
+def create_qclient_invokable_definitions(data, file_we):
     ret = ""
     for service_name in data["services"]:
         if "rpc" in data["services"][service_name]:
@@ -141,9 +140,11 @@ def create_qclient_invokable_definitions(data):
                 if is_valid_for_qt_rpc_client(rpc_info):
                     callParams = ""
                     if "parameter" in rpc_info:
-                        for prm in rpc_info["parameter"]:
+                        for prm, prm_type in rpc_info["parameter"].items():
                             if callParams != "":
                                 callParams += ", "
+                            if prm_type in global_types.enumerations:
+                                prm="static_cast<capnzero::"+file_we+"::"+prm_type+">("+prm+")"
                             callParams += prm
                     ret += create_rpc_client_method_head(rpc_info, service_name, rpc_name, "QClient", type_converter_fn = map_type_to_qt_type) + "\n"
                     ret += "{\n"
@@ -154,7 +155,10 @@ def create_qclient_invokable_definitions(data):
         if "properties" in service:
             for key, descr in service["properties"].items():
                 property_name_with_prefix = create_property_var_name(service_name, key)
-                ret += "{} QClient::{}() const\n".format(map_type_to_qt_type(descr["type"]), property_name_with_prefix)
+                return_type = map_type_to_qt_type(descr["type"])
+                if return_type in global_types.enumerations:
+                    return_type = "QClient::" + return_type
+                ret += "{} QClient::{}() const\n".format(return_type, property_name_with_prefix)
                 ret += "{\n"
                 ret += "\treturn m_{};\n".format(property_name_with_prefix)
                 ret += "}\n\n"
@@ -216,4 +220,4 @@ int QClientSignals::getFd() const
            create_subscriptions(data), \
            create_string_comparisons(data, webchannel_support), \
            create_qclient_constructor_definition(data), \
-           create_qclient_invokable_definitions(data))
+           create_qclient_invokable_definitions(data, file_we))
