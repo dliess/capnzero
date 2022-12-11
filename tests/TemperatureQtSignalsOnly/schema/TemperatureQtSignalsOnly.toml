@@ -7,3 +7,5 @@
         sensorName = { type = 'Text', access = "read-only" }
         actualTemperature = { type = 'Float32', access = "read-only" }
         tempRange = { type = 'ETempRange', access = "read-only" }
+    [services._.signal.tempRangeChanged2]
+        parameter = { tempRange = 'ETempRange' }

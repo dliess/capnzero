@@ -71,7 +71,7 @@ def create_string_comparisons(data, webchannel_support = False):
                 string_comparisons += "\t}\n"
     return string_comparisons
 
-def create_qclient_signal_connections(data):
+def create_qclient_signal_connections(data, file_we):
     ret = ""
     for service_name in data["services"]:
         if "signal" in data["services"][service_name]:
@@ -90,10 +90,29 @@ def create_qclient_signal_connections(data):
 """.format(create_signal_method_name_qt(service_name, signal_name), \
            property_name_with_prefix)
                 else:
-                    ret += "\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, this, &QClient::{0});\n".format(create_signal_method_name_qt(service_name, signal_name))
+                    def add_capnzero_ns_to_enum(the_tuple):
+                        if decay_t(the_tuple[0]) in global_types.enumerations:
+                            return ("capnzero::"+file_we+"::"+the_tuple[0], the_tuple[1])
+                        else:
+                            return the_tuple
+                    param_array = create_fn_input_parameter_array_sender(signal_info, map_type_to_qt_type)
+                    param_array2 = map(add_capnzero_ns_to_enum, param_array)
+                    def decay_tuple(the_tuple):
+                        if decay_t(the_tuple[0]) in global_types.enumerations:
+                            return "static_cast<"+decay_t(the_tuple[0])+">("+the_tuple[1]+")"
+                        else:
+                            return the_tuple[1]
+                    emit_params = map(decay_tuple, param_array)
+                    ret += """\
+\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, [this]({1}){{
+    emit {0}({2});
+\t\t}});\n
+""".format(create_signal_method_name_qt(service_name, signal_name),
+           param_array_expand_full(param_array2),
+           ', '.join(emit_params))
     return ret
 
-def create_qclient_constructor_definition(data):
+def create_qclient_constructor_definition(data, file_we):
     ret = ""
     if has_rpc(data) and has_signals(data):
         ret += """\
@@ -107,7 +126,7 @@ QClient::QClient(zmq::context_t& rZmqContext,
 {{
 {0}
 }}
-""".format(create_qclient_signal_connections(data))
+""".format(create_qclient_signal_connections(data, file_we))
     elif has_rpc(data):
         ret += """\
 QClient::QClient(zmq::context_t& rZmqContext,
@@ -128,7 +147,7 @@ QClient::QClient(zmq::context_t& rZmqContext,
 {{
 {0}
 }}
-""".format(create_qclient_signal_connections(data))
+""".format(create_qclient_signal_connections(data, file_we))
     return ret
 
 def create_qclient_invokable_definitions(data, file_we):
@@ -219,5 +238,5 @@ int QClientSignals::getFd() const
            create_all_client_definition_for_rpc(file_we, data, webchannel_support), \
            create_subscriptions(data), \
            create_string_comparisons(data, webchannel_support), \
-           create_qclient_constructor_definition(data), \
+           create_qclient_constructor_definition(data, file_we), \
            create_qclient_invokable_definitions(data, file_we))

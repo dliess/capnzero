@@ -126,14 +126,37 @@ def create_fn_parameter_str(params, converter_fn = None):
             ret += ", "
     return ret
 
+def create_fn_parameter_array(params, converter_fn = None):
+    ret = []
+    for param_name, param_type in params.items():
+        ret.append( (type_to_fn_parameter_pass_str(param_type, converter_fn), param_name) )
+    return ret
+
 def create_fn_input_parameter_str_sender(rpc_info, converter_fn = None):
+    return param_array_expand_full(create_fn_input_parameter_array_sender(rpc_info, converter_fn))
+
+def create_fn_input_parameter_array_sender(rpc_info, converter_fn = None):
     param_type = rpc_param_type(rpc_info)
     if param_type == RPCType.Void:
-        return ""
+        return []
     elif param_type == RPCType.Dict:
-        return create_fn_parameter_str(rpc_info["parameter"], converter_fn)
+        return create_fn_parameter_array(rpc_info["parameter"], converter_fn)
     elif param_type == RPCType.CapnpNative:
-        return "::capnp::MessageBuilder& sndData"
+        return [("::capnp::MessageBuilder&", "sndData")]
+
+def param_array_expand_full(param_array):
+    def tup2str(the_tuple):
+        return ' '.join(the_tuple)
+    return ', '.join(map(tup2str, param_array))
+
+def decay_t(full_type):
+    ret = full_type.strip('*&').strip()
+    prefix = "const "
+    if ret.startswith(prefix):
+        ret = ret[len(prefix):]
+        ret = ret.strip()
+    return ret
+
 
 def create_fn_arguments_str(rpc_info):
     if not "parameter" in rpc_info:
