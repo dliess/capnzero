@@ -37,21 +37,6 @@ def create_return_type_gadget_declarations(data):
                     ret_str += create_qgadget_declaration(rpc_info["returns"], service_name, rpc_name)
     return ret_str
 
-def create_metatype_registration_content(data):
-    ret_str = ""
-    for service_name in data["services"]:
-        if "rpc" in data["services"][service_name]:
-            for rpc_name in data["services"][service_name]["rpc"]:
-                rpc_info = data["services"][service_name]["rpc"][rpc_name]
-                return_type = rpc_return_type(rpc_info)
-                if return_type == RPCType.Dict:
-                    struct_name = "Return" + service_name +  upperfirst(rpc_name)
-                    if ret_str != "":
-                        ret_str += "\n"
-                    ret_str += "\tqRegisterMetaType<{}>();".format(struct_name)
-    return ret_str
-
-
 def create_rpc_declarations_for_qt_obj(data, tabs, prefix):
     ret_str = ""
     for service_name in data["services"]:
@@ -77,21 +62,17 @@ namespace capnzero::{0}
 {{
 
 {1}
-inline void registerMetatTypes()
-{{
-{2}
-}}
 
 class QClientRpc : public QObject, public {0}ClientRpcTransport
 {{
     Q_OBJECT
 public:
     QClientRpc(zmq::context_t& rZmqContext, const std::string& rpcAddr, QObject *pParent = Q_NULLPTR);
-{3}
+{2}
 }};
 
 }} // namespace capnzero::{0}
-""".format(file_we, create_return_type_gadget_declarations(data), create_metatype_registration_content(data), create_rpc_declarations_for_qt_obj(data, "\t", "Q_INVOKABLE"))
+""".format(file_we, create_return_type_gadget_declarations(data), create_rpc_declarations_for_qt_obj(data, "\t", "Q_INVOKABLE"))
 
 def create_signal_part(file_we, data):
     return """\
@@ -178,16 +159,17 @@ def create_qclient_constructor_declaration(data):
     return ret
 
 def create_qclient_enum_declarations():
-    enum_str = ""
+    enum_str = "\n"
     for enum_name in global_types.enumerations:
-        enum_str += "\tenum class {} {{\n".format(enum_name)
+        qenum_name = enum_name
+        enum_str += "\tenum class {} {{\n".format(qenum_name)
         enum_data = global_types.enumerations[enum_name]
         for i, (enum_element_name, enum_element_number) in enumerate(enum_data.items()):
             enum_str += "\t\t{} = {}".format(enum_element_name, enum_element_number)
             if i < len(enum_data) - 1:
                 enum_str += ","
             enum_str += "\n"
-        enum_str += "\t}};\n\tQ_ENUM({})\n".format(enum_name)
+        enum_str += "\t}};\n\tQ_ENUM({})\n".format(qenum_name)
     return enum_str
 
 def create_qtclient(file_we, data):
@@ -207,6 +189,7 @@ signals:
 {5}
 private:
 {6}
+    void registerMetaTypes();
 }};
 
 }} // namespace capnzero::{0}

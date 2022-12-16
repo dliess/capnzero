@@ -2,7 +2,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)   
 
-find_package(Qt5 5.11.3
+find_package(Qt5 
    COMPONENTS Core REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -15,6 +15,7 @@ capnzero_generate_cpp(
     GEN_QT_CPP_HEADERS gen_qt_cpp_headers
     GEN_OUT_DIR        ${CMAKE_CURRENT_BINARY_DIR}
     IDL_FILE           "CalculatorQtWebchannel.toml"
+    CLANG_FORMAT       "ON"
 )
 
 add_library(${TargetBaseName}-schema STATIC

@@ -77,39 +77,64 @@ def create_qclient_signal_connections(data, file_we):
         if "signal" in data["services"][service_name]:
             for signal_name in data["services"][service_name]["signal"]:
                 signal_info = data["services"][service_name]["signal"][signal_name]
+                arguments = get_arguments(signal_info)
+                ### create signal args
+                # > convert types to qt type
+                arguments_qt = map(lambda arg: { 'result': map_type_to_qt_type(arg['capnz_type']),\
+                                                 'capnz_type': arg['capnz_type'], \
+                                                 'name': arg['parameter_name'] }, arguments)
+                # > we have to namespace the enumerations
+                def add_ns_if_is_enum(capnz_type, type_to_decorate):
+                    return "capnzero::" + file_we + "::" + type_to_decorate if is_enum_type(capnz_type) else type_to_decorate
+                arguments_qt_ns = map(lambda arg: { 'result': add_ns_if_is_enum(arg['capnz_type'], arg['result']), \
+                                                    'capnz_type':  arg['capnz_type'], \
+                                                    'name': arg['name'] }, arguments_qt)
+                # > add const& to non-trivial types
+                arguments_qt_ns_constref = map(lambda arg: { 'result': constref_nontrivial(arg['capnz_type'], arg['result']), \
+                                                             'name': arg['name'] }, arguments_qt_ns)
+                # > to string
+                arguments_qt_ns_constref_str = ",".join(map(lambda arg: "{} {}".format(arg['result'], arg['name']), arguments_qt_ns_constref))
+                ### create signal call args
+                # > we have to static cast the enum parameters
+                def add_cast_if_is_enum(capnz_type, parameter_name):
+                    return "static_cast<QClient::{}>({})".format(capnz_type, parameter_name) if is_enum_type(capnz_type) else parameter_name
+                call_parameters = map(lambda arg: add_cast_if_is_enum(arg['capnz_type'], arg['parameter_name']) , arguments)
+                # > to string (names only)
+                call_parameters_str = ",".join(call_parameters)
+
                 property_name = signal_name.removesuffix("Changed")
                 if has_property(data["services"][service_name], property_name):
                     property_name_with_prefix = create_property_var_name(service_name, property_name)
-                    ret += """\
-\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, [this](const auto& val){{
-\t\tif(m_{1} != static_cast<decltype(m_{1})>(val)){{
-\t\t\tm_{1} = static_cast<decltype(m_{1})>(val);
+                    if is_enum_type(arguments[0]['capnz_type']):
+                        ret += """\
+\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, [this]({1}){{
+\t\tif(m_{2} != static_cast<decltype(m_{2})>(val)){{
+\t\t\tm_{2} = static_cast<decltype(m_{2})>(val);
 \t\t\temit {0}();
 \t\t}}
 \t}});
 """.format(create_signal_method_name_qt(service_name, signal_name), \
+           arguments_qt_ns_constref_str, \
+           property_name_with_prefix)
+                    else:
+                        ret += """\
+\tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, [this]({1}){{
+\t\tif(m_{2} != val){{
+\t\t\tm_{2} = val;
+\t\t\temit {0}();
+\t\t}}
+\t}});
+""".format(create_signal_method_name_qt(service_name, signal_name), \
+           arguments_qt_ns_constref_str, \
            property_name_with_prefix)
                 else:
-                    def add_capnzero_ns_to_enum(the_tuple):
-                        if decay_t(the_tuple[0]) in global_types.enumerations:
-                            return ("capnzero::"+file_we+"::"+the_tuple[0], the_tuple[1])
-                        else:
-                            return the_tuple
-                    param_array = create_fn_input_parameter_array_sender(signal_info, map_type_to_qt_type)
-                    param_array2 = map(add_capnzero_ns_to_enum, param_array)
-                    def decay_tuple(the_tuple):
-                        if decay_t(the_tuple[0]) in global_types.enumerations:
-                            return "static_cast<"+decay_t(the_tuple[0])+">("+the_tuple[1]+")"
-                        else:
-                            return the_tuple[1]
-                    emit_params = map(decay_tuple, param_array)
                     ret += """\
 \tQObject::connect(&m_qclientSignals, &QClientSignals::{0}, [this]({1}){{
-    emit {0}({2});
-\t\t}});\n
-""".format(create_signal_method_name_qt(service_name, signal_name),
-           param_array_expand_full(param_array2),
-           ', '.join(emit_params))
+\t\t\temit {0}({2});
+\t}});
+""".format(create_signal_method_name_qt(service_name, signal_name), \
+           arguments_qt_ns_constref_str, \
+           call_parameters_str)
     return ret
 
 def create_qclient_constructor_definition(data, file_we):
@@ -124,6 +149,7 @@ QClient::QClient(zmq::context_t& rZmqContext,
     m_qclientRpc(rZmqContext, rpcAddr),
     m_qclientSignals(rZmqContext, signalAddr)
 {{
+    registerMetaTypes();
 {0}
 }}
 """.format(create_qclient_signal_connections(data, file_we))
@@ -135,6 +161,7 @@ QClient::QClient(zmq::context_t& rZmqContext,
     QObject(pParent),
     m_qclientRpc(rZmqContext, rpcAddr)
 {{
+    registerMetaTypes();
 }}
 """
     elif has_signals(data):
@@ -145,6 +172,7 @@ QClient::QClient(zmq::context_t& rZmqContext,
     QObject(pParent),
     m_qclientSignals(rZmqContext, signalAddr)
 {{
+    registerMetaTypes();
 {0}
 }}
 """.format(create_qclient_signal_connections(data, file_we))
@@ -162,12 +190,19 @@ def create_qclient_invokable_definitions(data, file_we):
                         for prm, prm_type in rpc_info["parameter"].items():
                             if callParams != "":
                                 callParams += ", "
-                            if prm_type in global_types.enumerations:
+                            if is_enum_type(prm_type):
                                 prm="static_cast<capnzero::"+file_we+"::"+prm_type+">("+prm+")"
                             callParams += prm
-                    ret += create_rpc_client_method_head(rpc_info, service_name, rpc_name, "QClient", type_converter_fn = map_type_to_qt_type) + "\n"
+                    ret += create_rpc_client_method_definition_head(rpc_info, service_name, rpc_name, "QClient", type_converter_fn = map_type_to_qt_type, forced_enum_namespace = "QClient") + "\n"
                     ret += "{\n"
-                    ret += "\t{}m_qclientRpc.{}({});\n".format("return " if ("returns" in rpc_info) else "", public_method_name_qt(service_name, rpc_name), callParams)
+                    m_qclientRpc_call = "m_qclientRpc.{}({})".format(public_method_name_qt(service_name, rpc_name), callParams)
+                    if "returns" in rpc_info:
+                        if rpc_return_type(rpc_info) == RPCType.DirectType and is_enum_type(rpc_info["returns"]):
+                            ret += "\treturn static_cast<QClient::{}>({});\n".format(rpc_info["returns"], m_qclientRpc_call)
+                        else:
+                            ret += "\treturn {};\n".format(m_qclientRpc_call)
+                    else:
+                        ret += "\t{};\n".format(m_qclientRpc_call)
                     ret += "}\n\n"
     for service_name in data["services"]:
         service = data["services"][service_name]
@@ -175,13 +210,29 @@ def create_qclient_invokable_definitions(data, file_we):
             for key, descr in service["properties"].items():
                 property_name_with_prefix = create_property_var_name(service_name, key)
                 return_type = map_type_to_qt_type(descr["type"])
-                if return_type in global_types.enumerations:
+                if is_enum_type(descr["type"]):
                     return_type = "QClient::" + return_type
                 ret += "{} QClient::{}() const\n".format(return_type, property_name_with_prefix)
                 ret += "{\n"
                 ret += "\treturn m_{};\n".format(property_name_with_prefix)
                 ret += "}\n\n"
     return ret
+
+def create_metatype_registration_content(data):
+    ret_str = ""
+    for service_name in data["services"]:
+        if "rpc" in data["services"][service_name]:
+            for rpc_name in data["services"][service_name]["rpc"]:
+                rpc_info = data["services"][service_name]["rpc"][rpc_name]
+                return_type = rpc_return_type(rpc_info)
+                if return_type == RPCType.Dict:
+                    struct_name = "Return" + service_name +  upperfirst(rpc_name)
+                    if ret_str != "":
+                        ret_str += "\n"
+                    ret_str += "\tqRegisterMetaType<{}>();".format(struct_name)
+    for enum_name in global_types.enumerations:
+        ret_str += "\n\tqRegisterMetaType<{0}>(\"{0}\");".format(enum_name)
+    return ret_str
 
 def create_capnzero_qobject_client_file_cpp_content_str(data, file_we, webchannel_support = False):
     return """\
@@ -234,9 +285,16 @@ int QClientSignals::getFd() const
 
 {5}
 
+void QClient::registerMetaTypes()
+{{
+{6}
+}}
+
+
 """.format(file_we, \
            create_all_client_definition_for_rpc(file_we, data, webchannel_support), \
            create_subscriptions(data), \
            create_string_comparisons(data, webchannel_support), \
            create_qclient_constructor_definition(data, file_we), \
-           create_qclient_invokable_definitions(data, file_we))
+           create_qclient_invokable_definitions(data, file_we),
+           create_metatype_registration_content(data))

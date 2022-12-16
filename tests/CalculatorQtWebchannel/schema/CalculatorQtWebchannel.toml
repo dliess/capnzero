@@ -4,16 +4,22 @@
 
 # parameter types: Bool, IntX, UIntX, Float32, Float64, Text, Span, Data<X>
 [services]
+    [services._.properties]
+        mode = { type = 'EMode', access = "read-write" }
     [services.Calculator.rpc.add]
         parameter = { a = 'Int32', b = 'Int32' }
-        returns = { ret = 'Int32'}
+        returns = 'Int32'
     [services.Calculator.rpc.sub]
         parameter = { a = 'Int32', b = 'Int32' }
-        returns = { ret = 'Int32'}
+        returns = 'Int32'
 
     [services.Screen.rpc.setBrightness]
         parameter = { brightness = 'UInt32' }
     [services.Screen.rpc.setColor]
+        parameter = { color = 'EColor' }
+    [services.Screen.rpc.getColor]
+        returns = 'EColor'
+    [services.Screen.signal.colorChanged]
         parameter = { color = 'EColor' }
     [services.Screen.signal.brightnessChanged]
         parameter = { brightness = 'UInt32' }
@@ -22,7 +28,7 @@
     [services.Screen.rpc.setId]
         parameter = { title = 'Data<8>' }
     [services.Screen.rpc.alltypes]
-        parameter = { a = 'Int32', b = 'Float32', c = 'Float64', d = 'Text', e = 'Span', f = 'Data<8>' }
-        returns = { a = 'Int32', b = 'Float32', c = 'Float64', d = 'Text', f = 'Data<8>' }
+        parameter = { a = 'Int32', b = 'Float32', c = 'Float64', d = 'Text', e = 'Span', f = 'Data<8>', color = 'EColor', mode = 'EMode' }
+        returns = { a = 'Int32', b = 'Float32', c = 'Float64', d = 'Text', f = 'Data<8>', color = 'EColor', mode = 'EMode' }
     [services.Screen.signal.alltypess]
-        parameter = { a = 'Int32', b = 'Float32', c = 'Float64', d = 'Text', e = 'Span', f = 'Data<8>' }
+        parameter = { a = 'Int32', b = 'Float32', c = 'Float64', d = 'Text', e = 'Span', f = 'Data<8>', color = 'EColor', mode = 'EMode' }

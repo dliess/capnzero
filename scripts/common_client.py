@@ -29,22 +29,27 @@ def create_signal_registration_method_name(service_name, signal_name):
     else:
         return "on{}{}".format(upperfirst(service_name), upperfirst(signal_name))
 
-def create_return_type_str_client(rpc_info, service_name, rpc_name, class_namespace = None, type_mapper_fn = None):
+def create_return_type_str_client(rpc_info, service_name, rpc_name, class_namespace = None, type_mapper_fn = None, forced_enum_namespace = None):
     return_type = rpc_return_type(rpc_info)
+    ret_type_str = ""
     if return_type == RPCType.Void or return_type == RPCType.CapnpNative:
-        return "void"
+        ret_type_str = "void"
     elif return_type == RPCType.DirectType:
+        capnz_type = rpc_info["returns"]
         if type_mapper_fn:
-            return type_mapper_fn(rpc_info["returns"])
+            ret_type_str = type_mapper_fn(capnz_type)
         else:
-            return rpc_info["returns"]
+            ret_type_str = capnz_type
+        if is_enum_type(capnz_type) and forced_enum_namespace:
+            ret_type_str = "{}::{}".format(forced_enum_namespace, ret_type_str)
     else:
+        ret_type_str = "Return{}{}".format(service_name, upperfirst(rpc_name))
+        candidate_for_namespacing = True
         if class_namespace:
-            return "{}::{}".format(class_namespace, "Return" + service_name +  upperfirst(rpc_name))
-        else:
-            return "{}".format("Return" + service_name +  upperfirst(rpc_name))
+            ret_type_str = "{}::{}".format(class_namespace, ret_type_str)
+    return ret_type_str
 
-def create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namespace, indent = "", type_converter_fn = None):
+def create_rpc_client_method_definition_head(rpc_info, service_name, rpc_name, class_namespace, indent = "", type_converter_fn = None, forced_enum_namespace = ""):
     ret_str = ""
     method_name = public_method_name(service_name, rpc_name)
     #TODO: this is a dirty hack:
@@ -53,12 +58,11 @@ def create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namesp
         method_name = lowerfirst(method_name)
     else:
         the_class_namespace = class_namespace
-    return_type_str = create_return_type_str_client(rpc_info, service_name, rpc_name, the_class_namespace, type_mapper_fn = type_converter_fn)
+    return_type_str = create_return_type_str_client(rpc_info, service_name, rpc_name, the_class_namespace, type_mapper_fn = type_converter_fn, forced_enum_namespace = forced_enum_namespace)
 
 
     parameter_str = create_fn_input_parameter_str_sender(rpc_info, converter_fn = type_converter_fn)
-    return_type = rpc_return_type(rpc_info)
-    if return_type == RPCType.CapnpNative:
+    if rpc_return_type(rpc_info) == RPCType.CapnpNative:
         if parameter_str != "":
             parameter_str += ", "
         ret_str += indent + "template <typename Callable>\n"
@@ -71,7 +75,7 @@ def create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namesp
     return ret_str
 
 def create_client_definition_for_rpc(rpc_info, service_name, rpc_name, file_we, class_namespace, type_converter_fn = None, webchannel_support = False):
-    method_head = create_rpc_client_method_head(rpc_info, service_name, rpc_name, class_namespace, type_converter_fn = type_converter_fn)
+    method_head = create_rpc_client_method_definition_head(rpc_info, service_name, rpc_name, class_namespace, type_converter_fn = type_converter_fn)
     param_type = rpc_param_type(rpc_info)
     return_type = rpc_return_type(rpc_info)
 

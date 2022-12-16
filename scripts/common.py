@@ -16,10 +16,7 @@ def add_whitespace(str_to_wrap, threshold):
     else:
         return str_to_wrap + " "
 
-def is_integral_type(capnz_type):
-    for enum_name in global_types.enumerations:
-        if capnz_type == enum_name:
-            return True
+def is_fundamental_type(capnz_type):
     return capnz_type == "Bool" or \
            capnz_type == "Int8" or \
            capnz_type == "Int16" or \
@@ -28,16 +25,27 @@ def is_integral_type(capnz_type):
            capnz_type == "UInt8" or \
            capnz_type == "UInt16" or \
            capnz_type == "UInt32" or \
-           capnz_type == "UInt64" or \
-           capnz_type == "Float32" or \
+           capnz_type == "UInt64"
+
+def is_floating_point_type(capnz_type):
+    return capnz_type == "Float32" or \
            capnz_type == "Float64"
 
-def type_to_fn_parameter_pass_str(capnz_type, converter_fn = None):
+def is_enum_type(capnz_type):
+    return capnz_type in global_types.enumerations
+
+def capnz_type_to_converted_pass_str(capnz_type, converter_fn = None):
     converted_type = capnz_type if not converter_fn else converter_fn(capnz_type)
-    if is_integral_type(capnz_type):
-        return converted_type
+    return constref_nontrivial(capnz_type, converted_type)
+
+def constref_nontrivial(capnz_type: str, type_to_decorate: str) -> str:
+    if is_fundamental_type(capnz_type) or \
+       is_floating_point_type(capnz_type) or \
+       is_enum_type(capnz_type) or \
+       capnz_type.endswith("&"):
+        return type_to_decorate
     else:
-        return "const {}&".format(converted_type)
+        return "const {}&".format(type_to_decorate)
 
 class RPCType:
     Void = 0
@@ -121,42 +129,40 @@ def create_fn_parameter_str_from_dict(fn_info, converter_fn = None):
 def create_fn_parameter_str(params, converter_fn = None):
     ret = ""
     for param_name, param_type in params.items():
-        ret += type_to_fn_parameter_pass_str(param_type, converter_fn) + " " + param_name
+        ret += capnz_type_to_converted_pass_str(param_type, converter_fn) + " " + param_name
         if list(params.keys())[-1] != param_name:
             ret += ", "
     return ret
 
-def create_fn_parameter_array(params, converter_fn = None):
-    ret = []
-    for param_name, param_type in params.items():
-        ret.append( (type_to_fn_parameter_pass_str(param_type, converter_fn), param_name) )
-    return ret
-
-def create_fn_input_parameter_str_sender(rpc_info, converter_fn = None):
-    return param_array_expand_full(create_fn_input_parameter_array_sender(rpc_info, converter_fn))
-
-def create_fn_input_parameter_array_sender(rpc_info, converter_fn = None):
-    param_type = rpc_param_type(rpc_info)
+def get_arguments(info):
+    param_type = rpc_param_type(info)
     if param_type == RPCType.Void:
         return []
     elif param_type == RPCType.Dict:
-        return create_fn_parameter_array(rpc_info["parameter"], converter_fn)
+        ret = []
+        for prm_name, prm_type in info["parameter"].items():
+            ret.append({'capnz_type': prm_type, 'parameter_name': prm_name})
+        return ret
     elif param_type == RPCType.CapnpNative:
-        return [("::capnp::MessageBuilder&", "sndData")]
+        return [{'capnz_type': "::capnp::MessageBuilder&", 'parameter_name': "sndData"}]
 
-def param_array_expand_full(param_array):
-    def tup2str(the_tuple):
-        return ' '.join(the_tuple)
-    return ', '.join(map(tup2str, param_array))
+def create_fn_input_parameter_str_sender(rpc_info, converter_fn = None):
+    param_type = rpc_param_type(rpc_info)
+    if param_type == RPCType.Void:
+        return ""
+    elif param_type == RPCType.Dict:
+        return create_fn_parameter_str(rpc_info["parameter"], converter_fn)
+    elif param_type == RPCType.CapnpNative:
+        return "::capnp::MessageBuilder& sndData"
 
-def decay_t(full_type):
-    ret = full_type.strip('*&').strip()
-    prefix = "const "
-    if ret.startswith(prefix):
-        ret = ret[len(prefix):]
-        ret = ret.strip()
-    return ret
-
+# maybe useful later on, but not used yet
+#def decay_t(full_type):
+#    ret = full_type.strip('*&').strip()
+#    prefix = "const "
+#    if ret.startswith(prefix):
+#        ret = ret[len(prefix):]
+#        ret = ret.strip()
+#    return ret
 
 def create_fn_arguments_str(rpc_info):
     if not "parameter" in rpc_info:
@@ -165,7 +171,7 @@ def create_fn_arguments_str(rpc_info):
     ret = ""
     if isinstance(params, dict):
         for param_name, param_type in params.items():
-            ret += type_to_fn_parameter_pass_str(map_2_ca_call_param_type(param_type)) + " " + param_name
+            ret += capnz_type_to_converted_pass_str(map_2_ca_call_param_type(param_type)) + " " + param_name
             if list(params.keys())[-1] != param_name:
                 ret += ", "
     elif params == "__capnp__native__":
@@ -180,7 +186,7 @@ def create_rpc_handler_fn_arguments_str(rpc_info):
         ret = ""
         params = rpc_info["parameter"]
         for param_name, p_type in params.items():
-            ret += type_to_fn_parameter_pass_str(map_2_ca_call_param_type(p_type)) + " " + param_name
+            ret += capnz_type_to_converted_pass_str(map_2_ca_call_param_type(p_type)) + " " + param_name
             if list(params.keys())[-1] != param_name:
                 ret += ", "
         return ret

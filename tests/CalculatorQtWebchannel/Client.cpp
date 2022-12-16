@@ -1,35 +1,36 @@
-#include "CalculatorQtWebchannel_QObjectClient.h"
-#include <iostream>
-#include <chrono>
+#include <WebSocketClientWrapper.h>
+#include <WebSocketTransport.h>
+
 #include <QCoreApplication>
 #include <QWebChannel>
 #include <QWebSocketServer>
-#include <WebSocketClientWrapper.h>
-#include <WebSocketTransport.h>
+#include <chrono>
+#include <iostream>
+
+#include "CalculatorQtWebchannel_QObjectClient.h"
 
 using namespace capnzero::CalculatorQtWebchannel;
 
 int main(int argc, char* argv[])
 {
-    zmq::context_t context;
-    QCoreApplication app(argc, argv);
-    
-    QWebSocketServer server(QStringLiteral("Calculator"),
-                            QWebSocketServer::NonSecureMode);
-    if (!server.listen(QHostAddress::LocalHost, 12345))
-    {
-        std::cout << "Failed to open web socket server.\n"; 
-        return -1;
-    }
-    WebSocketClientWrapper clientWrapper(&server);
-    QWebChannel channel;
-    QObject::connect(&clientWrapper, &WebSocketClientWrapper::clientConnected,
-                        &channel, &QWebChannel::connectTo);
+   zmq::context_t context;
+   QCoreApplication app(argc, argv);
 
-    QClient wcServiceObj(context,
-                                                     "tcp://*:5555",
-                                                     "tcp://*:5556");
-    channel.registerObject(QStringLiteral("Calculator"), &wcServiceObj);
+   QWebSocketServer server(QStringLiteral("Calculator"),
+                           QWebSocketServer::NonSecureMode);
+   if (!server.listen(QHostAddress::LocalHost, 12345))
+   {
+      std::cout << "Failed to open web socket server.\n";
+      return -1;
+   }
+   qRegisterMetaType<capnzero::CalculatorQtWebchannel::EColor>("capnzero::CalculatorQtWebchannel::EColor");
+   WebSocketClientWrapper clientWrapper(&server);
+   QWebChannel channel;
+   QObject::connect(&clientWrapper, &WebSocketClientWrapper::clientConnected,
+                    &channel, &QWebChannel::connectTo);
 
-    return app.exec();
+   QClient wcServiceObj(context, "tcp://127.0.0.1:5555", "tcp://127.0.0.1:5556");
+   channel.registerObject(QStringLiteral("Calculator"), &wcServiceObj);
+
+   return app.exec();
 }
