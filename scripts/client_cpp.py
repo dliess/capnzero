@@ -20,7 +20,7 @@ def create_string_comparisons(data, zmqSubSocket):
                     string_comparisons += "\t\tauto res2 = {}.recv(paramBuf, zmq::recv_flags::none);\n".format(zmqSubSocket)
                     string_comparisons += "\t\tif (!res2) { throw std::runtime_error(\"No received msg\"); }\n"
                     if isinstance(signal_info["parameter"], dict):
-                        string_comparisons += "\t\t::capnp::UnalignedFlatArrayMessageReader msgReader(asCapnpArr(paramBuf));\n"
+                        string_comparisons += "\t\t::capnp::FlatArrayMessageReader msgReader(asCapnpArr(paramBuf));\n"
                         string_comparisons += "\t\tauto paramReader = msgReader.getRoot<{}>();\n".format(create_capnp_signal_param_type_str(service_name, signal_name))
                         cb_call_params = ""
                         for param_name, param_type in param_info.items():
@@ -34,7 +34,7 @@ def create_string_comparisons(data, zmqSubSocket):
                             if list(param_info.keys())[-1] != param_name:
                                 cb_call_params += ", "
                     elif signal_info["parameter"] == "__capnp__native__":
-                        string_comparisons += "\t\t::capnp::UnalignedFlatArrayMessageReader reader(asCapnpArr(paramBuf));\n"
+                        string_comparisons += "\t\t::capnp::FlatArrayMessageReader reader(asCapnpArr(paramBuf));\n"
                         cb_call_params += "reader"
                 string_comparisons += "\t\tif({0}) {0}({1});\n".format(create_signal_cb_member(service_name, signal_name), cb_call_params)
                 string_comparisons += "\t}\n"

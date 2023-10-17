@@ -1,5 +1,7 @@
+.cache/
 build/
 build-*/
 *.pyc
 __pycache__/
 generated/
+compile_commands.json

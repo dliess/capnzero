@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:bookworm
 
 # Users and passwords
 ARG BUILD_USER=build-user
@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y \
     libcapnp-dev \
     capnproto \
     libzmq3-dev \
+    cppzmq-dev \
     python3-toml \
     && rm -rf /var/lib/apt/lists/*
 
@@ -57,6 +58,11 @@ RUN apt-get update && apt-get install -y \
     qml-module-qt-websockets \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y \
+    ripgrep \
+    clangd \
+    && rm -rf /var/lib/apt/lists/*
+
 # Create group and user
 RUN groupadd --gid=$GID $BUILD_USER
 RUN useradd --create-home --shell /bin/bash $BUILD_USER --uid=$UID -g $BUILD_USER
@@ -64,6 +70,10 @@ RUN echo "$BUILD_USER:$BUILD_USER_PWD" | chpasswd
 RUN usermod -aG sudo $BUILD_USER
 
 USER $BUILD_USER
-
 RUN wget -qO- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | zsh || true
 RUN sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="gentoo"/g' ~/.zshrc
+
+RUN echo 'alias vim=/home/build-user/nvim-linux64/bin/nvim' >> /home/build-user/.zshrc
+RUN echo 'alias vim=/home/build-user/nvim-linux64/bin/nvim' >> /home/build-user/.bashrc
+
+WORKDIR /home/build-user/s

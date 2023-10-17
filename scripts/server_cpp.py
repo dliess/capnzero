@@ -73,7 +73,7 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
                     cases_str += "\t\t\t\t\tif (!res2) { throw std::runtime_error(\"No received msg\"); }\n"
                     if param_category == RPCType.Dict:
                         param_info = rpc_info["parameter"]
-                        cases_str += "\t\t\t\t\t::capnp::UnalignedFlatArrayMessageReader msgReader(asCapnpArr(paramBuf));\n"
+                        cases_str += "\t\t\t\t\t::capnp::FlatArrayMessageReader msgReader(asCapnpArr(paramBuf));\n"
                         cases_str += "\t\t\t\t\tauto paramReader = msgReader.getRoot<{}>();\n".format(create_capnp_rpc_parameter_type_str(service_name, rpc_name))
                         for param_name, param_type in param_info.items():
                             cpp_rpc_if_type = map_2_ca_call_param_type(param_type)
@@ -86,7 +86,7 @@ def create_capnzero_server_file_cpp_content_str(data, file_we):
                             if list(param_info.keys())[-1] != param_name:
                                 params += ", "
                     elif param_category == RPCType.CapnpNative:
-                        cases_str += "\t\t\t\t\t::capnp::UnalignedFlatArrayMessageReader reader(asCapnpArr(paramBuf));\n"
+                        cases_str += "\t\t\t\t\t::capnp::FlatArrayMessageReader reader(asCapnpArr(paramBuf));\n"
                         params = "reader"
                 return_expr = ""
 
@@ -248,7 +248,7 @@ void {0}Server::processNextRequest(WaitMode waitMode) {{
     if(waitMode == WaitMode::NonBlocking && !res0) return;
     zmq::message_t rpcCoordBuf;
     auto res1 = m_zmqRepSocket.recv(rpcCoordBuf, zmq::recv_flags::none);
-    ::capnp::UnalignedFlatArrayMessageReader msgReader(asCapnpArr(rpcCoordBuf));
+    ::capnp::FlatArrayMessageReader msgReader(asCapnpArr(rpcCoordBuf));
     auto coordReader = msgReader.getRoot<RpcCoord>();
     switch(coordReader.getServiceId())
     {{
