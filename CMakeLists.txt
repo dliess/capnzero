@@ -13,7 +13,7 @@ include(cmake/CPM.cmake)
 CPMFindPackage(
   NAME CapnProto
   GITHUB_REPOSITORY capnproto/capnproto
-  VERSION 1.0.1
+  VERSION 0.9.0
 ) 
 if (CapnProto_ADDED)
   add_executable(CapnProto::capnpc_cpp ALIAS capnpc_cpp)

@@ -61,6 +61,9 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     ripgrep \
     clangd \
+    nodejs \
+    python3-venv \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
 # Create group and user
@@ -76,4 +79,4 @@ RUN sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="gentoo"/g' ~/.zshrc
 RUN echo 'alias vim=/home/build-user/nvim-linux64/bin/nvim' >> /home/build-user/.zshrc
 RUN echo 'alias vim=/home/build-user/nvim-linux64/bin/nvim' >> /home/build-user/.bashrc
 
-WORKDIR /home/build-user/s
+WORKDIR /home/build-user/capnzero

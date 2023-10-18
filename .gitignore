@@ -5,3 +5,4 @@ build-*/
 __pycache__/
 generated/
 compile_commands.json
+.nvimlog
