@@ -52,6 +52,8 @@ PROPERTIES
   GENERATOR_SCRIPT_PATH "${CMAKE_CURRENT_LIST_DIR}/scripts/capnzeroc.py"
 )
 
+target_compile_definitions(${TARGET_NAME} PUBLIC CAPNP_ALLOW_UNALIGNED=1)
+
 option(CAPNZERO_BUILD_TESTS "Capnzero build tests" ON)
 if(${CAPNZERO_BUILD_TESTS})
   add_subdirectory(tests)
