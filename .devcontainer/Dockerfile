@@ -60,10 +60,10 @@ RUN apt-get update && apt-get install -y \
 
 RUN apt-get update && apt-get install -y \
     ripgrep \
-    clangd \
-    nodejs \
-    python3-venv \
     npm \
+    nodejs \
+    unzip \
+    python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
 # Create group and user
