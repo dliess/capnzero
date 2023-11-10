@@ -22,8 +22,8 @@ endif ()
   
 CPMFindPackage(
   NAME cppzmq
-  GITHUB_REPOSITORY zeromq/cppzmq
-  VERSION 4.7.0
+  GITHUB_REPOSITORY dliess/cppzmq
+  VERSION 4.7.1
   OPTIONS
     "CPPZMQ_BUILD_TESTS OFF"
 )
