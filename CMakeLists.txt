@@ -23,7 +23,7 @@ endif ()
 CPMFindPackage(
   NAME cppzmq
   GITHUB_REPOSITORY dliess/cppzmq
-  VERSION 4.7.1
+  GIT_TAG dliess/v4.7.1
   OPTIONS
     "CPPZMQ_BUILD_TESTS OFF"
 )

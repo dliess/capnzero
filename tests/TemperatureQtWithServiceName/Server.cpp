@@ -1,4 +1,5 @@
 #include "TemperatureQtWithServiceName_Server.h"
+#include <cstdint>
 #include <iostream>
 #include <chrono>
 #include <cmath>
@@ -57,7 +58,7 @@ int main()
 
     utils::FdSet fdSet;
     fdSet.AddFd(timerFd, [&](int fd){
-        int timersElapsed = 0;
+        int64_t timersElapsed = 0;
         (void) read(fd, &timersElapsed, 8);
         float diff = commandedTemperature - actualTemperatureTmp;
         if(std::abs(diff) > 0.005)

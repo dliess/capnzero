@@ -37,12 +37,8 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     libcapnp-dev \
     capnproto \
-    libzmq3-dev \
-    cppzmq-dev \
     python3-toml \
     && rm -rf /var/lib/apt/lists/*
-
-RUN rm /usr/include/zmq.hpp
 
 # install Qt build common dependencies
 RUN apt-get update && apt-get install -y \
