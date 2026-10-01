@@ -54,6 +54,28 @@ _Documentation has to be written_
 checkout: __tests/TemperatureQt__
 _Documentation has to be written_
 
+## Testing
+```
+  cmake -S . -B build-capnp-1.5 \
+    -DENABLE_CURVE=OFF \
+    -DFETCHCONTENT_UPDATES_DISCONNECTED=ON \
+    -DCAPNZERO_RUNTIME_PYTHON="$PWD/build/python-env/bin/python"
+
+  cmake --build build-capnp-1.5 -j 4
+
+  ctest --test-dir build-capnp-1.5 --output-on-failure
+
+  The Python environment already exists in your workspace. These commands build all examples and run the generator, Python runtime, and C++/Python interoperability tests.
+
+  - ENABLE_CURVE=OFF avoids the existing ZeroMQ/GCC 14 compilation issue.
+  - FETCHCONTENT_UPDATES_DISCONNECTED=ON reuses downloaded dependencies.
+  - Interoperability tests require permission to create local IPC sockets.
+
+  To run only the generator tests:
+
+  python3 -m unittest discover -s tests/generator -v
+```
+
 [zeromq]: https://zeromq.org/
 [cap'nproto]: https://capnproto.org/
 
