@@ -1,0 +1,27 @@
+capnp-inline = '''
+struct NativeValue {
+    value @0 :Int32;
+}
+'''
+[enumerations]
+Color = { Red = 0, Green = 1 }
+[services._.rpc.add]
+parameter = { a = 'Int32', b = 'Int32' }
+returns = { value = 'Int32' }
+[services._.rpc.direct]
+parameter = { value = 'Int32' }
+returns = 'Int32'
+[services._.rpc.echo]
+parameter = { text = 'Text', data = 'Data<4>', color = 'Color', fraction = 'Float64', flag = 'Bool' }
+returns = { text = 'Text', data = 'Data<4>', color = 'Color', fraction = 'Float64', flag = 'Bool' }
+[services._.rpc.native]
+parameter = '__capnp__native__'
+returns = '__capnp__native__'
+[services._.rpc.count]
+returns = 'Int32'
+[services._.rpc.notify]
+[services._.signal.changed]
+parameter = { value = 'Int32' }
+[services.Device.rpc.increment]
+parameter = { value = 'Int32' }
+returns = 'Int32'

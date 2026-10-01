@@ -56,3 +56,8 @@ _Documentation has to be written_
 
 [zeromq]: https://zeromq.org/
 [cap'nproto]: https://capnproto.org/
+
+## Generator development and Python support
+
+See [generator architecture and testing](docs/generator.md) and
+[Python client/server usage](docs/python.md).

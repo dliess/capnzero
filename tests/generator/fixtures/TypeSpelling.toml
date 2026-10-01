@@ -1,0 +1,3 @@
+[services._.rpc.bytes]
+parameter = { value = 'Data<04>' }
+returns = 'Data<04>'

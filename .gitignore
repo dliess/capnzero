@@ -6,3 +6,4 @@ __pycache__/
 generated/
 compile_commands.json
 .nvimlog
+*.egg-info/

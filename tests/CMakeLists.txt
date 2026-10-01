@@ -1,3 +1,9 @@
+find_program(CAPNZERO_TEST_PYTHON NAMES python3)
+if(NOT CAPNZERO_TEST_PYTHON)
+  message(FATAL_ERROR "Python 3 is required for generator tests")
+endif()
+add_test(NAME generator-characterization
+  COMMAND "${CAPNZERO_TEST_PYTHON}" -m unittest discover -s "${CMAKE_CURRENT_SOURCE_DIR}/generator")
 add_subdirectory(Calculator)
 add_subdirectory(CalculatorQtWebchannel)
 add_subdirectory(TemperatureQt)
@@ -5,3 +11,5 @@ add_subdirectory(TemperatureQtWithServiceName)
 add_subdirectory(TemperatureQtSignalsOnly)
 add_subdirectory(RPCOnly)
 add_subdirectory(SignalsOnly)
+
+add_subdirectory(interop)

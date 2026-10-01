@@ -1,143 +1,62 @@
 #!/usr/bin/python3
-
-import toml
+"""CapnZero compiler entry point; importing this module performs no I/O."""
 import getopt
-import sys
-import os.path
-import re
-import global_types
-from common import *
-from capnp_file import *
-from client_transport_h import *
-from client_transport_inl import *
-from client_h import *
-from client_inl import *
-from client_cpp import *
-from server_h import *
-from server_cpp import *
-from rpc_interface_headers import *
-from qobject_client_h import *
-from qobject_client_cpp import *
-
-def expand_properties(data):
-    for service_name in data["services"]:
-        service = data["services"][service_name]
-        if "properties" in service:
-            for key, descr in service["properties"].items():
-                if not isinstance(descr, dict):
-                    propertyType = service["properties"][key]
-                    service["properties"][key] = { 'type' :  propertyType, 'access' : "read-write" }
-
-            for key, descr in service["properties"].items():
-                if not "signal" in service:
-                    service["signal"] = dict()
-                service["signal"].update( { "{}Changed".format(lowerfirst(key)) : { "parameter" : { 'val' : descr["type"] } } } )
-
-                if "-write" in descr["access"]:
-                    if not "rpc" in service:
-                        service["rpc"] = dict()
-                    service["rpc"].update( { "set{}".format(upperfirst(key)) : { "parameter" : { 'val' : descr["type"] } } } )
-                if "-toggle" in descr["access"]:
-                    if not "rpc" in service:
-                        service["rpc"] = dict()
-                    service["rpc"].update( { "toggle{}".format(upperfirst(key)) : {} } )
-
-
-outdir="undefined"
-descrfile="undefined"
-clang_format="OFF"
-options, remainder = getopt.getopt(sys.argv[1:], ['o:d:c:'], ['outdir=', 'descrfile=', 'clang_format='])
-for opt, arg in options:
-    if opt in ('-o', '--outdir'):
-        outdir = arg
-    elif opt in ('-d', '--descrfile'):
-        descrfile = arg
-    elif opt in ('-c', '--clang_format'):
-        clang_format = arg
-
-file_we = os.path.splitext(os.path.basename(descrfile))[0]
-
-print("outdir: " + outdir)
-print("descrfile: " + descrfile)
-print("file_we: " + file_we)
-print("clang_format: " + clang_format)
-do_clang_format = (clang_format == "ON" or clang_format == "on" or clang_format == "On")
-
 from pathlib import Path
-Path(outdir).mkdir(parents=True, exist_ok=True)
+import re
+import subprocess
+import sys
 
-capnp_file = outdir + "/" + file_we + ".capnp"
-client_transport_h_file = outdir + "/" + file_we + "_ClientTransport.h"
-client_transport_inl_file = outdir + "/" + file_we + "_ClientTransport.inl"
-client_h_file = outdir + "/" + file_we + "_Client.h"
-client_inl_file = outdir + "/" + file_we + "_Client.inl"
-client_cpp_file = outdir + "/" + file_we + "_Client.cpp"
-server_h_file = outdir + "/" + file_we + "_Server.h"
-server_cpp_file = outdir + "/" + file_we + "_Server.cpp"
-qobject_client_h_file = outdir + "/" + file_we + "_QObjectClient.h"
-qobject_client_cpp_file = outdir + "/" + file_we + "_QObjectClient.cpp"
-qobject_wc_client_cpp_file = outdir + "/" + file_we + "_QObjectWcClient.cpp"
-
-data = toml.load(descrfile)
-global_types.init()
-# add keys if they don't exist
-if "enumerations" in data:
-    global_types.enumerations = data["enumerations"]
-
-expand_properties(data)
-
-with open(capnp_file, 'w') as open_file:
-    open_file.write(create_capnp_file_content_str(data, file_we))
-
-with open(client_transport_h_file, 'w') as open_file:
-    open_file.write(create_capnzero_client_transport_file_h_content_str(data, file_we))
-
-with open(client_transport_inl_file, 'w') as open_file:
-    open_file.write(create_capnzero_client_transport_file_inl_content_str(data, file_we))
-
-with open(client_h_file, 'w') as open_file:
-    open_file.write(create_capnzero_client_file_h_content_str(data, file_we))
-
-with open(client_inl_file, 'w') as open_file:
-    open_file.write(create_capnzero_client_file_inl_content_str(data, file_we))
-
-with open(client_cpp_file, 'w') as open_file:
-    open_file.write(create_capnzero_client_file_cpp_content_str(data, file_we))
-
-for service_name in data["services"]:
-    service = data["services"][service_name]
-    if "rpc" in service:
-        rpc_if_filename_we = file_we + create_member_cb_if_type(service_name)
-        rpc_if_filename = outdir + "/" + rpc_if_filename_we + ".h"
-        with open(rpc_if_filename, 'w') as open_file:
-            open_file.write(create_capnzero_cbif_h_content_str(service_name, service["rpc"], rpc_if_filename_we, file_we))
-        if do_clang_format:
-            os.system('clang-format -style=file -i ' + rpc_if_filename)
-
-with open(server_h_file, 'w') as open_file:
-    open_file.write(create_capnzero_server_file_h_content_str(data, file_we))
-
-with open(server_cpp_file, 'w') as open_file:
-    open_file.write(create_capnzero_server_file_cpp_content_str(data, file_we))
+from parsing import load
+from model import build_protocol
+from capnp_file import render as render_schema
+from cpp.backend import render as render_cpp
 
 
-with open(qobject_client_h_file, 'w') as open_file:
-    open_file.write(create_capnzero_qobject_client_file_h_content_str(data, file_we))
+def generate(descrfile, outdir, clang_format='OFF', *, language='cpp', schema_id=None):
+    if language not in ('cpp', 'python'):
+        raise ValueError(f'Unknown target language: {language}')
+    if schema_id is not None and not re.fullmatch(r'@0x[89a-fA-F][0-9a-fA-F]{15}', schema_id):
+        raise ValueError('Schema ID must be @0x followed by 16 hex digits with the high bit set')
+    protocol = build_protocol(load(descrfile), str(descrfile))
+    name = Path(descrfile).stem
+    files = {name + '.capnp': render_schema(protocol, name, schema_id, cpp_namespace=language == 'cpp')}
+    if language == 'cpp':
+        files.update(render_cpp(protocol, name))
+    elif language == 'python':
+        from python_backend import render
+        files.update(render(protocol, name))
+    output = Path(outdir)
+    output.mkdir(parents=True, exist_ok=True)
+    for filename, content in files.items():
+        (output / filename).write_text(content)
+    if clang_format in ('ON', 'on', 'On'):
+        for filename in files:
+            if filename.endswith(('.h', '.inl', '.cpp')):
+                subprocess.run(['clang-format', '-style=file', '-i', str(output / filename)], check=True)
+    return tuple(output / filename for filename in files)
 
-with open(qobject_client_cpp_file, 'w') as open_file:
-    open_file.write(create_capnzero_qobject_client_file_cpp_content_str(data, file_we, webchannel_support = False))
 
-with open(qobject_wc_client_cpp_file, 'w') as open_file:
-    open_file.write(create_capnzero_qobject_client_file_cpp_content_str(data, file_we, webchannel_support = True))
+def main(argv=None):
+    options, remainder = getopt.getopt(sys.argv[1:] if argv is None else argv, 'o:d:c:',
+                                      ['outdir=', 'descrfile=', 'clang_format=', 'language=', 'schema-id='])
+    outdir, descrfile, clang_format, language, schema_id = 'undefined', 'undefined', 'OFF', 'cpp', None
+    for opt, arg in options:
+        if opt in ('-o', '--outdir'):
+            outdir = arg
+        elif opt in ('-d', '--descrfile'):
+            descrfile = arg
+        elif opt in ('-c', '--clang_format'):
+            clang_format = arg
+        elif opt == '--language':
+            language = arg
+        elif opt == '--schema-id':
+            schema_id = arg
+    print('outdir: ' + outdir)
+    print('descrfile: ' + descrfile)
+    print('file_we: ' + Path(descrfile).stem)
+    print('clang_format: ' + clang_format)
+    generate(descrfile, outdir, clang_format, language=language, schema_id=schema_id)
 
-if do_clang_format:
-    os.system('clang-format -style=file -i ' + client_transport_h_file)
-    os.system('clang-format -style=file -i ' + client_transport_inl_file)
-    os.system('clang-format -style=file -i ' + client_h_file)
-    os.system('clang-format -style=file -i ' + client_inl_file)
-    os.system('clang-format -style=file -i ' + client_cpp_file)
-    os.system('clang-format -style=file -i ' + server_h_file)
-    os.system('clang-format -style=file -i ' + server_cpp_file)
-    os.system('clang-format -style=file -i ' + qobject_client_h_file)
-    os.system('clang-format -style=file -i ' + qobject_client_cpp_file)
-    os.system('clang-format -style=file -i ' + qobject_wc_client_cpp_file)
+
+if __name__ == '__main__':
+    main()

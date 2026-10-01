@@ -1,0 +1,20 @@
+[enumerations]
+Mode = { Off = 0, On = 1 }
+[services.Zebra.rpc.empty]
+parameter = {}
+returns = {}
+[services.Zebra.rpc.noArgs]
+returns = 'Int32'
+[services.Zebra.rpc.bytes]
+parameter = { dynamic = 'Span', fixed = 'Data<4>', text = 'Text', mode = 'Mode' }
+returns = 'Data<4>'
+[services.Zebra.rpc.setActive]
+parameter = { original = 'Int32' }
+[services.Zebra.signal.activeChanged]
+parameter = { original = 'Int32' }
+[services.Zebra.properties]
+active = { type = 'Bool', access = 'read-write-toggle' }
+[services._.rpc.fire]
+[services._.signal.empty]
+parameter = {}
+[services._.signal.tick]

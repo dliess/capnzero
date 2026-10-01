@@ -54,6 +54,7 @@ PROPERTIES
 
 option(CAPNZERO_BUILD_TESTS "Capnzero build tests" ON)
 if(${CAPNZERO_BUILD_TESTS})
+  enable_testing()
   add_subdirectory(tests)
 endif()
 
@@ -89,23 +90,9 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}-config.cmake" "
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
 )
 
-install(
-  FILES 
-    "scripts/capnp_file.py"
-    "scripts/capnzeroc.py"
-    "scripts/client_cpp.py"
-    "scripts/client_h.py"
-    "scripts/client_inl.py"
-    "scripts/client_transport_h.py"
-    "scripts/client_transport_inl.py"
-    "scripts/common_client.py"
-    "scripts/common.py"
-    "scripts/global_types.py"
-    "scripts/qobject_client_cpp.py"
-    "scripts/qobject_client_h.py"
-    "scripts/rpc_interface_headers.py"
-    "scripts/server_cpp.py"
-    "scripts/server_h.py"
-  DESTINATION
-    "${GENERATOR_SCRIPT_PATH_INSTALL}"
+install(DIRECTORY scripts/
+  DESTINATION "${GENERATOR_SCRIPT_PATH_INSTALL}"
+  FILES_MATCHING PATTERN "*.py"
+  PATTERN "__pycache__" EXCLUDE
+  PATTERN "toml2Json.py" EXCLUDE
 )

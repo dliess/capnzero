@@ -27,6 +27,7 @@
 // Header
 
 #include <FdSet.h>
+#include <algorithm>
 #include <sstream> //std::stringstream
 #include <string.h> //strerror
 #include <errno.h> //errno
