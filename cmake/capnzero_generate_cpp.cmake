@@ -1,3 +1,40 @@
+# Use the tools belonging to the linked runtime for native builds. In particular,
+# do not let cached paths from an older system package override a fetched version.
+# Cross builds retain the SDK's host-tool overrides.
+function(capnzero_get_capnp_tools)
+  if(NOT CMAKE_CROSSCOMPILING AND TARGET CapnProto::capnp_tool
+      AND TARGET CapnProto::capnpc_cpp)
+    set(CAPNP_EXECUTABLE "$<TARGET_FILE:CapnProto::capnp_tool>")
+    set(CAPNPC_CXX_EXECUTABLE "$<TARGET_FILE:CapnProto::capnpc_cpp>")
+  else()
+    if(NOT CAPNP_EXECUTABLE)
+      if(DEFINED ENV{CAPNP})
+        set(CAPNP_EXECUTABLE "$ENV{CAPNP}")
+      else()
+        find_program(CAPNP_EXECUTABLE capnp)
+      endif()
+    endif()
+    if(NOT CAPNPC_CXX_EXECUTABLE)
+      if(DEFINED ENV{CAPNPC_CXX})
+        set(CAPNPC_CXX_EXECUTABLE "$ENV{CAPNPC_CXX}")
+      else()
+        get_filename_component(capnp_dir "${CAPNP_EXECUTABLE}" DIRECTORY)
+        find_program(CAPNPC_CXX_EXECUTABLE capnpc-c++ HINTS "${capnp_dir}")
+      endif()
+    endif()
+  endif()
+
+  if(TARGET capnp_tool)
+    get_target_property(CAPNP_INCLUDE_DIRECTORY capnp_tool CAPNP_INCLUDE_DIRECTORY)
+  endif()
+  foreach(variable CAPNP_EXECUTABLE CAPNPC_CXX_EXECUTABLE CAPNP_INCLUDE_DIRECTORY)
+    if(NOT ${variable})
+      message(FATAL_ERROR "Could not locate Cap'n Proto dependency: ${variable}")
+    endif()
+    set(${variable} "${${variable}}" PARENT_SCOPE)
+  endforeach()
+endfunction()
+
 function(capnzero_generate_cpp)
 
   set(noValues)
@@ -51,6 +88,8 @@ function(capnzero_generate_cpp)
 
   file(GLOB_RECURSE ALL_GENERATOS_SCRIPTS "${GENERATOR_SCRIPT_DIR}/*.py")
 
+  capnzero_get_capnp_tools()
+
   set(GEN_CAPNP_FILE "${_GEN_OUTPUT_DIR}/${FIL_WLE}.capnp")
   if(NOT ARG_SKIP_GENERATION)
     add_custom_command(
@@ -69,52 +108,27 @@ function(capnzero_generate_cpp)
       ARGS  --outdir=${_GEN_OUTPUT_DIR}
             --descrfile=${ARG_IDL_FILE}
             --clang_format=${ARG_CLANG_FORMAT}
+            "--capnp-executable=${CAPNP_EXECUTABLE}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS ${GENERATOR_SCRIPT_PATH}  ${ARG_IDL_FILE} ${ALL_GENERATOS_SCRIPTS}
+      DEPENDS ${GENERATOR_SCRIPT_PATH} ${ARG_IDL_FILE} ${ALL_GENERATOS_SCRIPTS}
+              "${CAPNP_EXECUTABLE}"
       COMMENT "Running capnzeroc generator script on ${${ARG_IDL_FILE}}"
       VERBATIM
     )
   endif()
 
-  if(NOT CAPNP_EXECUTABLE)
-    if(DEFINED ENV{CAPNP})
-      # capnp found at the yocto sdk
-      set(CAPNP_EXECUTABLE "$ENV{CAPNP}")
-    else()
-      find_program(CAPNP_EXECUTABLE "capnp")
-      if(CAPNP_EXECUTABLE-NOTFOUND)
-        message(SEND_ERROR "Could not locate capnp executable (CAPNP_EXECUTABLE).")
-      endif()
-    endif()
-  endif()
-  message(STATUS "Found capnp executable is ${CAPNP_EXECUTABLE}")
-
-  if (NOT CAPNPC_CXX_EXECUTABLE)
-    if(DEFINED ENV{CAPNPC_CXX})
-      # capnpc-c++ found at the yocto sdk
-      set(CAPNPC_CXX_EXECUTABLE "$ENV{CAPNPC_CXX}")
-    else()
-      # search in the same directory, where "capnp" was found
-      get_filename_component(capnp_dir "${CAPNP_EXECUTABLE}" DIRECTORY)
-      find_program(CAPNPC_CXX_EXECUTABLE "capnpc-c++" HINTS "${capnp_dir}")
-      if(CAPNPC_CXX_EXECUTABLE-NOTFOUND)
-        message(SEND_ERROR "Could not locate capnpc-c++ executable (CAPNPC_CXX_EXECUTABLE).")
-      endif()
-    endif()
-  endif()
-
-  message(STATUS "Found capnpc-c++ executable is ${CAPNPC_CXX_EXECUTABLE}")
-
   set(CAPNP_GENERATE_BASE_PATH "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WLE}.capnp")
   if(NOT ARG_SKIP_GENERATION)
     add_custom_command(
       OUTPUT "${CAPNP_GENERATE_BASE_PATH}.c++" "${CAPNP_GENERATE_BASE_PATH}.h"
-      COMMAND ${CAPNP_EXECUTABLE}
+      COMMAND "${CAPNP_EXECUTABLE}"
       ARGS compile
-          -o ${CAPNPC_CXX_EXECUTABLE}
+          -o "${CAPNPC_CXX_EXECUTABLE}"
+          -I "${CAPNP_INCLUDE_DIRECTORY}"
           --src-prefix ${_GEN_OUTPUT_DIR}
           ${GEN_CAPNP_FILE}
-      DEPENDS "${GEN_CAPNP_FILE}"
+      DEPENDS "${GEN_CAPNP_FILE}" "${CAPNP_EXECUTABLE}" "${CAPNPC_CXX_EXECUTABLE}"
+              "${CAPNP_INCLUDE_DIRECTORY}/capnp/c++.capnp"
       COMMENT "Compiling Cap'n Proto schema ${GEN_CAPNP_FILE}"
       VERBATIM
     )

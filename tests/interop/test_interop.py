@@ -96,6 +96,7 @@ def main():
     parser.add_argument('--cpp-client', required=True)
     parser.add_argument('--cpp-server', required=True)
     parser.add_argument('--generator-python', default='python3')
+    parser.add_argument('--capnp-executable', default='capnp')
     parser.add_argument('--cpp-only', action='store_true')
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='capnzero-interop-') as tmp:
@@ -106,7 +107,8 @@ def main():
             return
         subprocess.run([args.generator_python, str(ROOT / 'scripts/capnzeroc.py'),
                         '--descrfile=' + str(Path(__file__).with_name('Interop.toml')),
-                        '--outdir=' + tmp, '--language=python'], check=True)
+                        '--outdir=' + tmp, '--language=python',
+                        '--capnp-executable=' + args.capnp_executable], check=True)
         py_server = [sys.executable, __file__, '--peer', 'server', tmp]
         py_client = [sys.executable, __file__, '--peer', 'client', tmp]
         for server, client, label in [([args.cpp_server], py_client, 'C++ / Python'),

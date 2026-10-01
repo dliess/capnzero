@@ -3,7 +3,7 @@ include(CMakeFindDependencyMacro)
 
 list(APPEND CMAKE_MODULE_PATH "${capnzero_CMAKE_DIR}")
 
-find_dependency(CapnProto REQUIRED)
+find_dependency(CapnProto 1.5.0 REQUIRED)
 find_dependency(cppzmq REQUIRED)
 
 if(NOT TARGET CAPNZERO::capnzero)

@@ -71,6 +71,28 @@ class GoldenTests(unittest.TestCase):
             self.assertIn('Schema ID must be', result.stderr)
             self.assertFalse(output.exists())
 
+    def test_cli_uses_selected_capnp_for_identity(self):
+        schema = ROOT / 'tests/Calculator/schema/Calculator.toml'
+        with tempfile.TemporaryDirectory(prefix='capnzero tools ') as tmp:
+            tool = Path(tmp) / 'selected capnp'
+            tool.write_text(f'#!{sys.executable}\nimport sys\n'
+                            'assert sys.argv[1:] == ["id"]\n'
+                            'print("@0xdeadbeefdeadbeef")\n')
+            tool.chmod(0o755)
+            for language in ('cpp', 'python'):
+                with self.subTest(language=language):
+                    output = Path(tmp) / language
+                    subprocess.run([
+                        sys.executable, str(ROOT / 'scripts/capnzeroc.py'),
+                        '--descrfile=' + str(schema), '--outdir=' + str(output),
+                        '--language=' + language, '--capnp-executable=' + str(tool),
+                    ], check=True, capture_output=True, text=True)
+                    self.assertTrue((output / 'Calculator.capnp').read_bytes().startswith(
+                        SCHEMA_ID.rstrip() + b';\n'))
+                    if language == 'cpp':
+                        for expected in (GOLDEN / schema.stem).iterdir():
+                            self.assertEqual(expected.read_bytes(), (output / expected.name).read_bytes())
+
 
 if __name__ == '__main__':
     unittest.main()

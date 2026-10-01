@@ -17,11 +17,13 @@ add_test(NAME interop-cpp
 set_tests_properties(interop-cpp PROPERTIES TIMEOUT 30)
 set(CAPNZERO_RUNTIME_PYTHON "" CACHE FILEPATH "Python interpreter with pycapnp and pyzmq for interoperability tests")
 if(CAPNZERO_RUNTIME_PYTHON)
+  capnzero_get_capnp_tools()
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/python/Interop_capnzero.py" "${CMAKE_CURRENT_BINARY_DIR}/python/Interop.capnp"
     COMMAND "${CAPNZERO_TEST_PYTHON}" "${PROJECT_SOURCE_DIR}/scripts/capnzeroc.py"
       "--descrfile=${CMAKE_CURRENT_SOURCE_DIR}/Interop.toml"
       "--outdir=${CMAKE_CURRENT_BINARY_DIR}/python" --language=python
+      "--capnp-executable=${CAPNP_EXECUTABLE}"
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Interop.toml"
       "${PROJECT_SOURCE_DIR}/scripts/python_backend.py"
       "${PROJECT_SOURCE_DIR}/scripts/capnzeroc.py"
@@ -30,6 +32,7 @@ if(CAPNZERO_RUNTIME_PYTHON)
       "${PROJECT_SOURCE_DIR}/scripts/parsing.py"
       "${PROJECT_SOURCE_DIR}/scripts/wire.py"
       "${PROJECT_SOURCE_DIR}/scripts/capnp_file.py"
+      "${CAPNP_EXECUTABLE}"
     VERBATIM)
   add_custom_target(interop-python-bindings ALL
     DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/python/Interop_capnzero.py")
@@ -40,6 +43,7 @@ if(CAPNZERO_RUNTIME_PYTHON)
   add_test(NAME interop-python
     COMMAND "${CAPNZERO_RUNTIME_PYTHON}" "${CMAKE_CURRENT_SOURCE_DIR}/test_interop.py"
       --generator-python "${CAPNZERO_TEST_PYTHON}"
+      --capnp-executable "${CAPNP_EXECUTABLE}"
       --cpp-client "$<TARGET_FILE:interop-client>" --cpp-server "$<TARGET_FILE:interop-server>")
   set_tests_properties(interop-python PROPERTIES TIMEOUT 60)
 endif()

@@ -60,12 +60,31 @@ clang-format version. Formatting now uses checked subprocess arguments so paths
 containing spaces work and formatter failures are reported. Short CLI options
 `-d`, `-o`, and `-c` also work.
 
+## Cap'n Proto dependency
+
+The C++ build requires Cap'n Proto 1.5.0 or newer. CMake uses a compatible
+installed package when available; otherwise CPM fetches v1.5.0. Native builds
+use the compiler tools from that package or source build, including for schema
+ID generation, and explicitly pass its schema include directory. Cached paths
+to older system tools are ignored for native builds. Cross builds retain the
+`CAPNP_EXECUTABLE` and `CAPNPC_CXX_EXECUTABLE` host-tool overrides; these must
+match the target library version.
+
+For standalone generation, `capnzeroc.py --capnp-executable=/path/to/capnp`
+selects the tool used by `capnp id`. The default remains `capnp` on `PATH`;
+an explicit `--schema-id` avoids invoking it altogether.
+
+After upgrading Cap'n Proto, regenerate its `.capnp.h` and `.capnp.c++` files
+and rebuild dependents together. Those files are compiler-version dependent.
+CapnZero's emitted schemas and client/server wrappers retain the existing
+golden output.
+
 ## Tests and local build
 
 The original repository had example applications but no registered CTest tests.
 On GCC 14, the pinned libzmq version fails to compile its optional CURVE code.
-Use a local build option to bypass that upstream failure; the dependency pins
-and default security features have not been changed. Three example utilities
+Use a local build option to bypass that upstream failure; the ZeroMQ dependency
+pins and default security features have not been changed. Three example utilities
 also needed an explicit `<algorithm>` include.
 
 ```

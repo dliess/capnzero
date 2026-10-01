@@ -18,10 +18,10 @@ def fields_text(fields):
     return ''.join(f'\t{f.name} @{f.ordinal} :{schema_type(f.type)};\n' for f in fields)
 
 
-def render(protocol, name, schema_id=None, *, cpp_namespace=True):
+def render(protocol, name, schema_id=None, *, cpp_namespace=True, capnp_executable='capnp'):
     # Preserve the legacy random ID unless the caller supplies an identity.
     if schema_id is None:
-        schema_id = subprocess.check_output(['capnp', 'id']).decode('utf-8').rstrip()
+        schema_id = subprocess.check_output([capnp_executable, 'id']).decode('utf-8').rstrip()
     out = f'{schema_id};\n\n'
     if cpp_namespace:
         out += f'using Cxx = import "/capnp/c++.capnp";\n$Cxx.namespace("capnzero::{name}");\n\n'
